@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>⌬ sᴛʀɪx ⌬· Command Centre</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+:root {
+  --bg:#05070A; --bg2:#0A1018; --surface:rgba(255,255,255,.05); --surface2:rgba(255,255,255,.03);
+  --border:rgba(255,255,255,.08); --text:#FFFFFF; --muted:#8A94A6;
+  --cyan:#00D9FF; --blue:#4D8DFF; --green:#00FFB2; --orange:#FFB547; --red:#FF5D5D;
+  --font:'Inter',system-ui,-apple-system,sans-serif; --radius:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;-webkit-font-smoothing:antialiased}
+.app{max-width:480px;margin:0 auto;padding:16px;padding-bottom:100px}
+.loading{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .3s}
+.loading.hidden{opacity:0;pointer-events:none}
+.loading-ring{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite}
+.loading-title{font-size:16px;font-weight:600;letter-spacing:2px;margin-top:20px;color:var(--text)}
+.loading-sub{font-size:11px;color:var(--muted);margin-top:6px}
+.loading-bar{width:160px;height:2px;background:var(--border);margin-top:16px;border-radius:1px;overflow:hidden}
+.loading-bar-fill{height:100%;width:0;background:var(--cyan);animation:loadBar 2s ease forwards}
+.loading-credit{font-size:10px;color:var(--muted);opacity:.4;margin-top:40px;letter-spacing:1px}
+@keyframes spin{100%{transform:rotate(360deg)}}
+@keyframes loadBar{100%{width:100%}}
+.header{text-align:center;padding:20px 0 24px}
+.header h1{font-size:32px;font-weight:600;letter-spacing:-1px;margin-bottom:2px}
+.header .sub{font-size:13px;color:var(--muted);font-weight:400}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+.metric-card .val{font-size:28px;font-weight:600;letter-spacing:-1px}
+.metric-card .lbl{font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+.section-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:3px;padding:8px 0 12px;font-weight:500}
+.device-list{display:flex;flex-direction:column;gap:8px}
+.device-card{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.device-card .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.device-card.online .status-dot{background:var(--green);box-shadow:0 0 6px var(--green)}
+.device-card.offline .status-dot{background:var(--red);box-shadow:0 0 6px var(--red)}
+.device-info{flex:1;min-width:0}
+.device-info .name{font-size:15px;font-weight:500}
+.device-info .meta{font-size:11px;color:var(--muted);margin-top:2px;display:flex;gap:12px}
+.activity-feed{display:flex;flex-direction:column;gap:6px}
+.activity-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px}
+.activity-item .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.activity-item .time{color:var(--muted);width:40px;flex-shrink:0}
+.activity-item .desc{flex:1;color:var(--text)}
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.analytic-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.analytic-card .chart{height:40px;background:var(--surface2);border-radius:8px;margin-top:8px;position:relative;overflow:hidden}
+.analytic-card .chart-fill{position:absolute;bottom:0;left:0;width:100%;background:var(--blue);opacity:.6;border-radius:8px}
+.notifications{display:flex;flex-direction:column;gap:8px}
+.notif-card{padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:12px;display:flex;align-items:center;gap:10px}
+.notif-card .icon{font-size:16px}
+.search-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.search-bar input{flex:1;background:transparent;border:none;color:var(--text);font-family:var(--font);font-size:14px;outline:none}
+.search-bar input::placeholder{color:var(--muted)}
+.bottom-nav{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:8px;background:var(--surface);backdrop-filter:blur(24px);border:1px solid var(--border);border-radius:24px;padding:6px 12px;z-index:10}
+.nav-item{padding:8px 16px;border-radius:18px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap}
+.nav-item.active{background:rgba(255,255,255,.1);color:var(--text)}
+.nav-item:active{transform:scale(.95)}
+.footer{text-align:center;padding:20px;font-size:10px;color:var(--muted);opacity:.5}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:12px}
+.card:active{transform:scale(.98);transition:transform .1s}
+::-webkit-scrollbar{width:0}
+.pill{padding:6px 14px;font-size:10px;font-weight:500;letter-spacing:2px;cursor:pointer;color:var(--muted);text-transform:uppercase;border:1px solid var(--border);border-radius:20px;background:transparent;transition:all .2s;white-space:nowrap;font-family:var(--font)}
+.pill:active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,217,255,.05)}
+
+/* Access Denied Overlay */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(12px);z-index:100;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:32px}
+.overlay .icon{font-size:48px;margin-bottom:16px}
+.overlay .title{font-size:18px;font-weight:600;letter-spacing:2px;color:var(--red);margin-bottom:8px}
+.overlay .sub{font-size:14px;color:var(--muted);max-width:320px}
+.overlay .btn{margin-top:24px;padding:10px 24px;border:1px solid var(--border);border-radius:20px;background:transparent;color:var(--text);font-family:var(--font);font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all .2s}
+.overlay .btn:hover{border-color:var(--cyan);color:var(--cyan)}
+</style>
+</head>
+<body>
+<div class="loading" id="loading">
+  <div class="loading-ring"></div>
+  <div class="loading-title">STRIX</div>
+  <div class="loading-sub">Initialising Secure Channel…</div>
+  <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+  <div class="loading-credit">Created by Strix</div>
+</div>
+
+<div class="app" id="app" style="display:none">
+  <div class="header">
+    <h1>STRIX</h1>
+    <div class="sub">Command Centre · Tier-IV Access</div>
+  </div>
+
+  <!-- System Overview Metrics -->
+  <div class="metrics">
+    <div class="metric-card">
+      <div class="val" id="onlineCount">1</div>
+      <div class="lbl">Online</div>
+    </div>
+    <div class="metric-card">
+      <div class="val" id="totalCount">1</div>
+      <div class="lbl">Total Devices</div>
+    </div>
+    <div class="metric-card">
+      <div class="val" id="cmdCount">0</div>
+      <div class="lbl">Operations</div>
+    </div>
+    <div class="metric-card">
+      <div class="val" id="uptime">00:00</div>
+      <div class="lbl">Uptime</div>
+    </div>
+  </div>
+
+  <!-- Search Bar (decorative) -->
+  <div class="search-bar">
+    <span style="opacity:0.5">🔍</span>
+    <input placeholder="Search devices…" disabled>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="section-title">Quick Actions</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+    <button class="pill" onclick="showAccessDenied()">CAPTURE</button>
+    <button class="pill" onclick="showAccessDenied()">SENSOR</button>
+    <button class="pill" onclick="showAccessDenied()">ARCHIVE</button>
+    <button class="pill" onclick="showAccessDenied()">EXTRACT</button>
+    <button class="pill" onclick="showAccessDenied()">GEOLOC</button>
+    <button class="pill" onclick="showAccessDenied()">STORAGE</button>
+  </div>
+
+  <!-- Device Grid -->
+  <div class="section-title">Devices <span style="color:var(--cyan);margin-left:4px">1</span></div>
+  <div class="device-list" id="devices">
+    <div class="device-card online" onclick="showAccessDenied()">
+      <span class="status-dot"></span>
+      <div class="device-info">
+        <div class="name">iPhone 13 Pro</div>
+        <div class="meta">iOS 17.4 · Battery 89% · Wi‑Fi · 2 min ago</div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">SECURE</div>
+    </div>
+  </div>
+
+  <!-- Activity Feed -->
+  <div class="section-title">Activity</div>
+  <div class="activity-feed" id="activity">
+    <div class="activity-item">
+      <span class="time">12:04</span>
+      <span class="dot" style="background:var(--green)"></span>
+      <span class="desc">iPhone 13 Pro · Device authenticated</span>
+    </div>
+    <div class="activity-item">
+      <span class="time">12:03</span>
+      <span class="dot" style="background:var(--cyan)"></span>
+      <span class="desc">System · Secure channel established</span>
+    </div>
+    <div class="activity-item">
+      <span class="time">12:02</span>
+      <span class="dot" style="background:var(--green)"></span>
+      <span class="desc">iPhone 13 Pro · Biometric lock engaged</span>
+    </div>
+  </div>
+
+  <!-- Analytics -->
+  <div class="section-title">Analytics</div>
+  <div class="analytics-grid">
+    <div class="analytic-card">
+      <div style="font-size:11px;color:var(--muted)">Sessions</div>
+      <div style="font-size:20px;font-weight:600;margin-top:4px">142</div>
+      <div class="chart"><div class="chart-fill" style="height:60%"></div></div>
+    </div>
+    <div class="analytic-card">
+      <div style="font-size:11px;color:var(--muted)">Traffic</div>
+      <div style="font-size:20px;font-weight:600;margin-top:4px">2.3 MB</div>
+      <div class="chart"><div class="chart-fill" style="height:40%;background:var(--green)"></div></div>
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div class="section-title">Notifications</div>
+  <div class="notifications">
+    <div class="notif-card"><span class="icon">🔵</span>System online · All services running</div>
+    <div class="notif-card"><span class="icon">🟢</span>iPhone 13 Pro · Secure tunnel active</div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">Created by Strix</div>
+</div>
+
+<div class="bottom-nav" id="bottomNav">
+  <div class="nav-item active" onclick="event.stopPropagation(); showAccessDenied()">Dashboard</div>
+  <div class="nav-item" onclick="event.stopPropagation(); showAccessDenied()">Devices</div>
+  <div class="nav-item" onclick="event.stopPropagation(); showAccessDenied()">Analytics</div>
+  <div class="nav-item" onclick="event.stopPropagation(); showAccessDenied()">Activity</div>
+</div>
+
+<!-- Access Denied Overlay (hidden initially) -->
+<div id="deniedOverlay" class="overlay" style="display:none">
+  <div class="icon">🔒</div>
+  <div class="title">ACCESS DENIED</div>
+  <div class="sub">Secure Protocol STRIX‑OS v4.2<br>Unauthorised access attempts are logged and reported.<br>This device is protected by end‑to‑end encryption.</div>
+  <button class="btn" onclick="hideAccessDenied()">DISMISS</button>
+</div>
+
+<script>
+// Demo metrics
+const startTime = Date.now();
+let cmdCounter = 0;
+
+function updateUptime() {
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  const h = Math.floor(elapsed / 3600).toString().padStart(2, '0');
+  const m = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
+  const s = (elapsed % 60).toString().padStart(2, '0');
+  document.getElementById('uptime').textContent = `${h}:${m}:${s}`;
+}
+setInterval(updateUptime, 1000);
+updateUptime();
+
+// Loading screen
+setTimeout(() => {
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('app').style.display = 'block';
+}, 1800);
+
+// Access denied logic
+function showAccessDenied() {
+  document.getElementById('deniedOverlay').style.display = 'flex';
+}
+
+function hideAccessDenied() {
+  document.getElementById('deniedOverlay').style.display = 'none';
+}
+
+// Preload demo analytics
+document.getElementById('onlineCount').textContent = 1;
+document.getElementById('totalCount').textContent = 1;
+</script>
+</body>
+</html>
