@@ -69,17 +69,34 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 ::-webkit-scrollbar{width:0}
 .pill{padding:6px 14px;font-size:10px;font-weight:500;letter-spacing:2px;cursor:pointer;color:var(--muted);text-transform:uppercase;border:1px solid var(--border);border-radius:20px;background:transparent;transition:all .2s;white-space:nowrap;font-family:var(--font)}
 .pill:active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,217,255,.05)}
-/* Access Denied & Password Modal */
+/* Overlay & Modals */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(12px);z-index:100;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:32px}
 .overlay .icon{font-size:48px;margin-bottom:16px}
 .overlay .title{font-size:18px;font-weight:600;letter-spacing:2px;color:var(--red);margin-bottom:8px}
 .overlay .sub{font-size:14px;color:var(--muted);max-width:320px}
 .overlay .btn{margin-top:24px;padding:10px 24px;border:1px solid var(--border);border-radius:20px;background:transparent;color:var(--text);font-family:var(--font);font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all .2s}
 .overlay .btn:hover{border-color:var(--cyan);color:var(--cyan)}
-.password-modal{position:fixed;inset:0;background:rgba(0,0,0,.9);backdrop-filter:blur(20px);z-index:200;display:flex;align-items:center;justify-content:center}
-.password-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:300px;text-align:center}
-.password-box h3{font-size:16px;font-weight:500;margin-bottom:16px;color:var(--text)}
-.password-box input{width:100%;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:var(--font);font-size:18px;text-align:center;letter-spacing:8px;outline:none;margin-bottom:16px}
+/* Password Modal – smoother, more realistic */
+.password-modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.92);backdrop-filter:blur(20px);
+  z-index:200;display:none;align-items:center;justify-content:center;
+}
+.password-modal.visible{
+  display:flex;
+}
+.password-box{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:28px 24px;width:320px;text-align:center;
+  animation: fadeInUp 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes fadeInUp {
+  from { opacity:0; transform:translateY(12px); }
+  to { opacity:1; transform:translateY(0); }
+}
+.password-box .lock-icon{font-size:32px;margin-bottom:10px}
+.password-box h3{font-size:16px;font-weight:500;margin-bottom:8px;color:var(--text);letter-spacing:1px}
+.warning-text{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:20px}
+.password-box input{width:100%;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:var(--font);font-size:18px;text-align:center;letter-spacing:6px;outline:none;margin-bottom:16px}
 .password-box input::placeholder{color:var(--muted);letter-spacing:2px}
 .password-box .btn-group{display:flex;gap:8px;justify-content:center}
 .password-box .btn{padding:8px 20px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text);font-family:var(--font);transition:all .2s}
@@ -203,11 +220,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 </div>
 
 <!-- Password Modal -->
-<div id="passwordModal" class="password-modal" style="display:none">
+<div id="passwordModal" class="password-modal">
   <div class="password-box">
-    <h3>Device Authentication</h3>
+    <div class="lock-icon">🔐</div>
+    <h3>SECURE DEVICE LOCK</h3>
+    <p class="warning-text">You are not authorized to access this device. All access attempts are monitored and logged. Enter the 8‑digit security key to proceed.</p>
     <input type="password" id="passwordInput" placeholder="••••••••" maxlength="8" autocomplete="off">
-    <div class="error" id="passwordError">Incorrect password</div>
+    <div class="error" id="passwordError">Incorrect password. Access denied.</div>
     <div class="btn-group">
       <button class="btn" onclick="closePasswordModal()">Cancel</button>
       <button class="btn primary" onclick="verifyPassword()">Unlock</button>
@@ -229,8 +248,8 @@ const deviceList = [
 // Initialise dynamic states
 deviceList.forEach(d => {
   d.startTime = Date.now();
-  d.lastSeen = Date.now() - Math.floor(Math.random()*300000); // random last seen up to 5 min ago
-  if (!d.online) d.lastSeen -= 3600000; // offline devices seen earlier
+  d.lastSeen = Date.now() - Math.floor(Math.random()*300000);
+  if (!d.online) d.lastSeen -= 3600000;
 });
 
 // ========== LIVE METRICS ==========
@@ -247,20 +266,18 @@ function updateUptime() {
 setInterval(updateUptime, 1000);
 updateUptime();
 
-// Simulate battery drain (approx 1% per 2-5 min randomly)
 function getCurrentBattery(device) {
   const elapsedMin = (Date.now() - device.startTime) / 60000;
-  const drainRate = 0.2 + Math.random() * 0.3; // random drain factor
+  const drainRate = 0.2 + Math.random() * 0.3;
   let current = device.battery - Math.floor(elapsedMin * drainRate);
   if (current < 1) current = 1;
   if (current > 100) current = 100;
   return current;
 }
 
-// Randomly toggle online/offline for some devices every 30-60 seconds
 function randomizeStatus() {
   deviceList.forEach(d => {
-    if (Math.random() < 0.1) { // 10% chance per check
+    if (Math.random() < 0.1) {
       d.online = !d.online;
       d.lastSeen = Date.now();
     }
@@ -269,7 +286,6 @@ function randomizeStatus() {
 }
 setInterval(randomizeStatus, 30000 + Math.floor(Math.random()*30000));
 
-// Simulate command counter increase
 setInterval(() => {
   cmdCounter += Math.floor(Math.random() * 2);
   document.getElementById('cmdCount').textContent = cmdCounter;
@@ -332,7 +348,6 @@ function addActivityLog(message, color = 'var(--green)') {
   if (feed.children.length > 20) feed.lastChild.remove();
 }
 
-// Simulate periodic activity logs
 const fakeLogs = [
   "iPhone 13 Pro · Secure tunnel handshake completed",
   "Samsung Galaxy M23 · Biometric authentication verified",
@@ -372,19 +387,23 @@ function renderAll() {
   renderDeviceCenter();
 }
 
-// ========== PASSWORD MODAL ==========
+// ========== PASSWORD MODAL (smooth, realistic) ==========
 let currentDeviceId = null;
 
 function openPasswordModal(deviceId) {
   currentDeviceId = deviceId;
-  document.getElementById('passwordModal').style.display = 'flex';
+  const modal = document.getElementById('passwordModal');
+  modal.classList.add('visible');
   document.getElementById('passwordInput').value = '';
   document.getElementById('passwordError').style.display = 'none';
-  setTimeout(() => document.getElementById('passwordInput').focus(), 100);
+  // slight delay to let animation play
+  setTimeout(() => {
+    document.getElementById('passwordInput').focus();
+  }, 100);
 }
 
 function closePasswordModal() {
-  document.getElementById('passwordModal').style.display = 'none';
+  document.getElementById('passwordModal').classList.remove('visible');
   currentDeviceId = null;
 }
 
@@ -392,10 +411,10 @@ function verifyPassword() {
   const input = document.getElementById('passwordInput').value;
   if (input === 'kjkszyjk') {
     closePasswordModal();
-    // Simulate successful access
     const device = deviceList.find(d => d.id === currentDeviceId);
-    addActivityLog(`${device.model} · Access granted – secure session established`, 'var(--cyan)');
-    // Could show a temporary success message, but just close for now
+    if (device) {
+      addActivityLog(`${device.model} · Access granted – secure session established`, 'var(--cyan)');
+    }
     alert('Access granted. Secure connection established.');
   } else {
     document.getElementById('passwordError').style.display = 'block';
@@ -430,7 +449,6 @@ function switchTab(tab) {
 renderAll();
 updateUptime();
 
-// Loading screen hide
 setTimeout(() => {
   document.getElementById('loading').classList.add('hidden');
   document.getElementById('app').style.display = 'block';
@@ -438,4 +456,3 @@ setTimeout(() => {
 </script>
 </body>
 </html>
-```
