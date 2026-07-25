@@ -1,118 +1,401 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>STRIX · Command Centre</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-:root {
-  --bg:#05070A; --bg2:#0A1018; --surface:rgba(255,255,255,.05); --surface2:rgba(255,255,255,.03);
-  --border:rgba(255,255,255,.08); --text:#FFFFFF; --muted:#8A94A6;
-  --cyan:#00D9FF; --blue:#4D8DFF; --green:#00FFB2; --orange:#FFB547; --red:#FF5D5D;
-  --font:'Inter',system-ui,-apple-system,sans-serif; --radius:20px;
-}
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;-webkit-font-smoothing:antialiased}
-.app{max-width:480px;margin:0 auto;padding:16px;padding-bottom:100px}
-.loading{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .3s}
-.loading.hidden{opacity:0;pointer-events:none}
-.loading-ring{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite}
-.loading-title{font-size:16px;font-weight:600;letter-spacing:2px;margin-top:20px;color:var(--text)}
-.loading-sub{font-size:11px;color:var(--muted);margin-top:6px}
-.loading-bar{width:160px;height:2px;background:var(--border);margin-top:16px;border-radius:1px;overflow:hidden}
-.loading-bar-fill{height:100%;width:0;background:var(--cyan);animation:loadBar 2s ease forwards}
-.loading-credit{font-size:10px;color:var(--muted);opacity:.4;margin-top:40px;letter-spacing:1px}
-@keyframes spin{100%{transform:rotate(360deg)}}
-@keyframes loadBar{100%{width:100%}}
-.header{text-align:center;padding:20px 0 24px}
-.header h1{font-size:32px;font-weight:600;letter-spacing:-1px;margin-bottom:2px}
-.header .sub{font-size:13px;color:var(--muted);font-weight:400}
-.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
-.metric-card .val{font-size:28px;font-weight:600;letter-spacing:-1px}
-.metric-card .lbl{font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
-.section-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:3px;padding:8px 0 12px;font-weight:500}
-.device-list{display:flex;flex-direction:column;gap:8px}
-.device-card{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);transition:all .2s}
-.device-card:hover{border-color:var(--cyan)}
-.device-card .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.device-card.online .status-dot{background:var(--green);box-shadow:0 0 6px var(--green)}
-.device-card.offline .status-dot{background:var(--red);box-shadow:0 0 6px var(--red)}
-.device-info{flex:1;min-width:0}
-.device-info .name{font-size:15px;font-weight:500}
-.device-info .meta{font-size:11px;color:var(--muted);margin-top:2px;display:flex;gap:12px;flex-wrap:wrap}
-.see-more{text-align:right;font-size:11px;color:var(--cyan);cursor:pointer;margin-top:8px;letter-spacing:1px;transition:opacity .2s}
-.see-more:hover{opacity:.7}
-.activity-feed{display:flex;flex-direction:column;gap:6px}
-.activity-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px}
-.activity-item .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.activity-item .time{color:var(--muted);width:40px;flex-shrink:0}
-.activity-item .desc{flex:1;color:var(--text)}
-.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.analytic-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
-.analytic-card .chart{height:40px;background:var(--surface2);border-radius:8px;margin-top:8px;position:relative;overflow:hidden}
-.analytic-card .chart-fill{position:absolute;bottom:0;left:0;width:100%;background:var(--blue);opacity:.6;border-radius:8px}
-.notifications{display:flex;flex-direction:column;gap:8px}
-.notif-card{padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:12px;display:flex;align-items:center;gap:10px}
-.notif-card .icon{font-size:16px}
-.search-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.search-bar input{flex:1;background:transparent;border:none;color:var(--text);font-family:var(--font);font-size:14px;outline:none}
-.search-bar input::placeholder{color:var(--muted)}
-.bottom-nav{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:8px;background:var(--surface);backdrop-filter:blur(24px);border:1px solid var(--border);border-radius:24px;padding:6px 12px;z-index:10}
-.nav-item{padding:8px 16px;border-radius:18px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap}
-.nav-item.active{background:rgba(255,255,255,.1);color:var(--text)}
-.nav-item:active{transform:scale(.95)}
-.footer{text-align:center;padding:20px;font-size:10px;color:var(--muted);opacity:.5}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:12px}
-.card:active{transform:scale(.98);transition:transform .1s}
-::-webkit-scrollbar{width:0}
-.pill{padding:6px 14px;font-size:10px;font-weight:500;letter-spacing:2px;cursor:pointer;color:var(--muted);text-transform:uppercase;border:1px solid var(--border);border-radius:20px;background:transparent;transition:all .2s;white-space:nowrap;font-family:var(--font)}
-.pill:active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,217,255,.05)}
-/* Overlay & Modals */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(12px);z-index:100;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:32px}
-.overlay .icon{font-size:48px;margin-bottom:16px}
-.overlay .title{font-size:18px;font-weight:600;letter-spacing:2px;color:var(--red);margin-bottom:8px}
-.overlay .sub{font-size:14px;color:var(--muted);max-width:320px}
-.overlay .btn{margin-top:24px;padding:10px 24px;border:1px solid var(--border);border-radius:20px;background:transparent;color:var(--text);font-family:var(--font);font-size:12px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all .2s}
-.overlay .btn:hover{border-color:var(--cyan);color:var(--cyan)}
-/* Password Modal – smoother, more realistic */
-.password-modal{
-  position:fixed;inset:0;background:rgba(0,0,0,.92);backdrop-filter:blur(20px);
-  z-index:200;display:none;align-items:center;justify-content:center;
-}
-.password-modal.visible{
-  display:flex;
-}
-.password-box{
-  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
-  padding:28px 24px;width:320px;text-align:center;
-  animation: fadeInUp 0.4s cubic-bezier(0.16,1,0.3,1);
-}
-@keyframes fadeInUp {
-  from { opacity:0; transform:translateY(12px); }
-  to { opacity:1; transform:translateY(0); }
-}
-.password-box .lock-icon{font-size:32px;margin-bottom:10px}
-.password-box h3{font-size:16px;font-weight:500;margin-bottom:8px;color:var(--text);letter-spacing:1px}
-.warning-text{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:20px}
-.password-box input{width:100%;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:var(--font);font-size:18px;text-align:center;letter-spacing:6px;outline:none;margin-bottom:16px}
-.password-box input::placeholder{color:var(--muted);letter-spacing:2px}
-.password-box .btn-group{display:flex;gap:8px;justify-content:center}
-.password-box .btn{padding:8px 20px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text);font-family:var(--font);transition:all .2s}
-.password-box .btn.primary{background:var(--cyan);color:#000;border-color:var(--cyan);font-weight:500}
-.password-box .btn:hover{opacity:.8}
-.error{color:var(--red);font-size:11px;margin-top:8px;display:none}
-/* Device Center */
-.device-center{margin-top:24px;padding-top:16px;border-top:1px solid var(--border)}
-.device-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.device-mini{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px;text-align:center;cursor:pointer;transition:all .2s}
-.device-mini:hover{border-color:var(--cyan)}
-.device-mini .model{font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px}
-.device-mini .detail{font-size:10px;color:var(--muted)}
-.device-mini .battery{font-size:11px;color:var(--green);margin-top:4px}
-.device-mini.offline .battery{color:var(--red)}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>STRIX · Command Centre</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    :root {
+      --bg:#05070A; --bg2:#0A1018; --surface:rgba(255,255,255,.05); --surface2:rgba(255,255,255,.03);
+      --border:rgba(255,255,255,.08); --text:#FFFFFF; --muted:#8A94A6;
+      --cyan:#00D9FF; --blue:#4D8DFF; --green:#00FFB2; --orange:#FFB547; --red:#FF5D5D;
+      --font:'Inter',system-ui,-apple-system,sans-serif; --radius:20px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      background:var(--bg);
+      color:var(--text);
+      font-family:var(--font);
+      min-height:100vh;
+      -webkit-font-smoothing:antialiased;
+      overflow-x:hidden;
+    }
+    .app{
+      max-width:480px;
+      margin:0 auto;
+      padding:16px;
+      padding-bottom:100px;
+    }
+
+    /* Loading screen */
+    .loading{
+      position:fixed;inset:0;background:var(--bg);z-index:999;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      transition:opacity 0.5s;
+    }
+    .loading.hidden{opacity:0;pointer-events:none}
+    .loading-ring{
+      width:28px;height:28px;
+      border:2px solid var(--border);
+      border-top-color:var(--cyan);
+      border-radius:50%;
+      animation:spin 0.8s linear infinite;
+    }
+    .loading-title{font-size:16px;font-weight:600;letter-spacing:2px;margin-top:20px;color:var(--text)}
+    .loading-sub{font-size:11px;color:var(--muted);margin-top:6px}
+    .loading-bar{width:160px;height:2px;background:var(--border);margin-top:16px;border-radius:1px;overflow:hidden}
+    .loading-bar-fill{height:100%;width:0;background:var(--cyan);animation:loadBar 2s ease forwards}
+    .loading-credit{font-size:10px;color:var(--muted);opacity:.4;margin-top:40px;letter-spacing:1px}
+    @keyframes spin{100%{transform:rotate(360deg)}}
+    @keyframes loadBar{100%{width:100%}}
+
+    /* Header – smaller STRIX title with glass effect */
+    .header{
+      text-align:center;
+      padding:20px 0 24px;
+    }
+    .header h1{
+      font-size:24px;                  /* reduced from 32px */
+      font-weight:500;                /* less bold */
+      letter-spacing:-0.5px;
+      margin-bottom:2px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 100%);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      display:inline-block;
+    }
+    .header .sub{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:400;
+      letter-spacing:1px;
+    }
+
+    /* Metrics */
+    .metrics{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .metric-card{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:16px;
+      text-align:center;
+      backdrop-filter:blur(24px);
+      transition:transform 0.2s, border-color 0.2s;
+    }
+    .metric-card:active{transform:scale(0.97)}
+    .metric-card .val{
+      font-size:28px;
+      font-weight:600;
+      letter-spacing:-1px;
+    }
+    .metric-card .lbl{
+      font-size:11px;
+      color:var(--muted);
+      margin-top:4px;
+      text-transform:uppercase;
+      letter-spacing:1px;
+    }
+
+    /* Section title */
+    .section-title{
+      font-size:12px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:3px;
+      padding:8px 0 12px;
+      font-weight:500;
+    }
+
+    /* Device list */
+    .device-list{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .device-card{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:14px 16px;
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      backdrop-filter:blur(24px);
+      transition:transform 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .device-card:hover{border-color:var(--cyan);}
+    .device-card:active{transform:scale(0.98)}
+    .device-card .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .device-card.online .status-dot{
+      background:var(--green);
+      box-shadow:0 0 6px var(--green);
+    }
+    .device-card.offline .status-dot{
+      background:var(--red);
+      box-shadow:0 0 6px var(--red);
+    }
+    .device-info{flex:1;min-width:0}
+    .device-info .name{font-size:15px;font-weight:500}
+    .device-info .meta{
+      font-size:11px;
+      color:var(--muted);
+      margin-top:2px;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    /* See more link */
+    .see-more{
+      text-align:right;
+      font-size:11px;
+      color:var(--cyan);
+      cursor:pointer;
+      margin-top:8px;
+      letter-spacing:1px;
+      transition:opacity 0.2s;
+    }
+    .see-more:hover{opacity:0.7}
+
+    /* Activity feed */
+    .activity-feed{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .activity-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 0;
+      border-bottom:1px solid rgba(255,255,255,.04);
+      font-size:12px;
+      opacity:0;
+      animation:fadeSlide 0.3s ease forwards;
+    }
+    @keyframes fadeSlide{
+      from{opacity:0;transform:translateY(8px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    .activity-item .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .activity-item .time{color:var(--muted);width:40px;flex-shrink:0}
+    .activity-item .desc{flex:1;color:var(--text)}
+
+    /* Analytics */
+    .analytics-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+    .analytic-card{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:14px;
+      backdrop-filter:blur(24px);
+      transition:transform 0.2s;
+    }
+    .analytic-card:active{transform:scale(0.97)}
+    .analytic-card .chart{
+      height:40px;
+      background:var(--surface2);
+      border-radius:8px;
+      margin-top:8px;
+      position:relative;
+      overflow:hidden;
+    }
+    .analytic-card .chart-fill{
+      position:absolute;
+      bottom:0;left:0;width:100%;
+      background:var(--blue);
+      opacity:.6;
+      border-radius:8px;
+    }
+
+    /* Notifications */
+    .notifications{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .notif-card{
+      padding:12px 14px;
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:12px;
+      font-size:12px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      backdrop-filter:blur(24px);
+    }
+    .notif-card .icon{font-size:16px}
+
+    /* Search bar – now functional */
+    .search-bar{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:12px 16px;
+      margin-bottom:12px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      backdrop-filter:blur(24px);
+    }
+    .search-bar input{
+      flex:1;
+      background:transparent;
+      border:none;
+      color:var(--text);
+      font-family:var(--font);
+      font-size:14px;
+      outline:none;
+    }
+    .search-bar input::placeholder{color:var(--muted)}
+
+    /* Bottom navigation */
+    .bottom-nav{
+      position:fixed;
+      bottom:16px;
+      left:50%;
+      transform:translateX(-50%);
+      display:flex;
+      gap:8px;
+      background:var(--surface);
+      backdrop-filter:blur(24px);
+      border:1px solid var(--border);
+      border-radius:24px;
+      padding:6px 12px;
+      z-index:10;
+    }
+    .nav-item{
+      padding:8px 16px;
+      border-radius:18px;
+      font-size:12px;
+      color:var(--muted);
+      cursor:pointer;
+      transition:all 0.2s;
+      white-space:nowrap;
+    }
+    .nav-item.active{
+      background:rgba(255,255,255,.1);
+      color:var(--text);
+    }
+    .nav-item:active{transform:scale(.95)}
+
+    .footer{
+      text-align:center;
+      padding:20px;
+      font-size:10px;
+      color:var(--muted);
+      opacity:.5;
+    }
+
+    /* Quick actions pills */
+    .pill{
+      padding:6px 14px;
+      font-size:10px;
+      font-weight:500;
+      letter-spacing:2px;
+      cursor:pointer;
+      color:var(--muted);
+      text-transform:uppercase;
+      border:1px solid var(--border);
+      border-radius:20px;
+      background:transparent;
+      transition:all .2s;
+      white-space:nowrap;
+      font-family:var(--font);
+      backdrop-filter:blur(24px);
+    }
+    .pill:active{
+      border-color:var(--cyan);
+      color:var(--cyan);
+      background:rgba(0,217,255,.05);
+    }
+
+    /* Modals & Overlays */
+    .overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(12px);
+      z-index:100;
+      display:flex;align-items:center;justify-content:center;flex-direction:column;
+      text-align:center;padding:32px;
+    }
+    .overlay .icon{font-size:48px;margin-bottom:16px}
+    .overlay .title{
+      font-size:18px;font-weight:600;letter-spacing:2px;
+      color:var(--red);margin-bottom:8px;
+    }
+    .overlay .sub{font-size:14px;color:var(--muted);max-width:320px}
+    .overlay .btn{
+      margin-top:24px;padding:10px 24px;
+      border:1px solid var(--border);border-radius:20px;
+      background:transparent;color:var(--text);
+      font-family:var(--font);font-size:12px;letter-spacing:2px;
+      cursor:pointer;text-transform:uppercase;transition:all .2s;
+    }
+    .overlay .btn:hover{border-color:var(--cyan);color:var(--cyan)}
+
+    /* Password Modal */
+    .password-modal{
+      position:fixed;inset:0;background:rgba(0,0,0,.92);backdrop-filter:blur(20px);
+      z-index:200;
+      display:none;align-items:center;justify-content:center;
+    }
+    .password-modal.visible{display:flex}
+    .password-box{
+      background:var(--bg2);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:28px 24px;
+      width:320px;
+      text-align:center;
+      animation: fadeInUp 0.35s cubic-bezier(0.16,1,0.3,1);
+    }
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .password-box .lock-icon{font-size:32px;margin-bottom:10px}
+    .password-box h3{font-size:16px;font-weight:500;margin-bottom:8px;color:var(--text);letter-spacing:1px}
+    .warning-text{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:20px}
+    .password-box input{
+      width:100%;padding:12px;background:var(--surface);border:1px solid var(--border);
+      border-radius:12px;color:var(--text);font-family:var(--font);font-size:18px;
+      text-align:center;letter-spacing:6px;outline:none;margin-bottom:16px;
+    }
+    .password-box input::placeholder{color:var(--muted);letter-spacing:2px}
+    .password-box .btn-group{display:flex;gap:8px;justify-content:center}
+    .password-box .btn{
+      padding:8px 20px;border-radius:20px;font-size:12px;cursor:pointer;
+      border:1px solid var(--border);background:transparent;color:var(--text);
+      font-family:var(--font);transition:all .2s;
+    }
+    .password-box .btn.primary{
+      background:var(--cyan);color:#000;border-color:var(--cyan);font-weight:500;
+    }
+    .password-box .btn:hover{opacity:.8}
+    .error{color:var(--red);font-size:11px;margin-top:8px;display:none}
+
+    /* Device Center */
+    .device-center{margin-top:24px;padding-top:16px;border-top:1px solid var(--border)}
+    .device-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .device-mini{
+      background:var(--surface);border:1px solid var(--border);border-radius:16px;
+      padding:12px;text-align:center;cursor:pointer;
+      transition:all 0.2s;backdrop-filter:blur(24px);
+    }
+    .device-mini:hover{border-color:var(--cyan)}
+    .device-mini:active{transform:scale(0.97)}
+    .device-mini .model{font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px}
+    .device-mini .detail{font-size:10px;color:var(--muted)}
+    .device-mini .battery{font-size:11px;color:var(--green);margin-top:4px}
+    .device-mini.offline .battery{color:var(--red)}
+  </style>
 </head>
 <body>
 <div class="loading" id="loading">
@@ -126,7 +409,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 <div class="app" id="app" style="display:none">
   <div class="header">
     <h1>STRIX</h1>
-    <div class="sub">Command Centre · Tier-IV Access</div>
+    <div class="sub">Command Centre · Tier‑IV Access</div>
   </div>
 
   <!-- System Overview Metrics -->
@@ -149,10 +432,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     </div>
   </div>
 
-  <!-- Search Bar (decorative) -->
+  <!-- Search Bar (now functional) -->
   <div class="search-bar">
     <span style="opacity:0.5">🔍</span>
-    <input placeholder="Search devices…" disabled>
+    <input placeholder="Search devices…" id="searchInput" oninput="filterDevices()">
   </div>
 
   <!-- Quick Actions -->
@@ -166,10 +449,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     <button class="pill" onclick="showAccessDenied()">STORAGE</button>
   </div>
 
-  <!-- Device List -->
-  <div class="section-title">Devices <span id="nodeCount" style="color:var(--cyan);margin-left:4px">0</span></div>
+  <!-- Device List (initially shows only iPhone 13 Pro) -->
+  <div class="section-title">Devices <span id="nodeCount" style="color:var(--cyan);margin-left:4px">1</span></div>
   <div class="device-list" id="devices"></div>
-  <div class="see-more" onclick="scrollToDeviceCenter()">See more device →</div>
+  <div class="see-more" id="seeMoreLink" onclick="revealAllDevices()">See more device →</div>
 
   <!-- Activity Feed -->
   <div class="section-title">Activity</div>
@@ -194,13 +477,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
   <div class="section-title">Notifications</div>
   <div class="notifications" id="notifications"></div>
 
-  <!-- Device Center -->
-  <div class="device-center" id="deviceCenter">
+  <!-- Device Center (hidden until user clicks "See more") -->
+  <div class="device-center" id="deviceCenter" style="display:none">
     <div class="section-title">DEVICE CENTER</div>
     <div class="device-grid" id="deviceGrid"></div>
   </div>
 
-  <!-- Footer -->
   <div class="footer">Created by Strix</div>
 </div>
 
@@ -235,224 +517,242 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 </div>
 
 <script>
-// ========== DEVICE DATA ==========
-const deviceList = [
-  { id: "iphone-13-pro", model: "iPhone 13 Pro", os: "iOS 17.4", battery: 89, online: true, mac: "A4:CF:12:9B:07:3D", ip: "192.168.1.105" },
-  { id: "galaxy-m23", model: "Samsung Galaxy M23", os: "Android 13", battery: 45, online: true, mac: "B8:27:EB:5F:1A:92", ip: "192.168.1.142" },
-  { id: "galaxy-a16", model: "Samsung Galaxy A16", os: "Android 14", battery: 84, online: true, mac: "DC:0B:34:6C:88:2E", ip: "192.168.1.178" },
-  { id: "oppo-a78", model: "Oppo A78", os: "Android 13", battery: 23, online: false, mac: "F2:1A:5D:77:39:AF", ip: "192.168.1.199" },
-  { id: "galaxy-s10", model: "Samsung Galaxy S10", os: "Android 12", battery: 95, online: true, mac: "A8:9E:4B:12:55:CC", ip: "192.168.1.211" },
-  { id: "galaxy-a15", model: "Samsung Galaxy A15", os: "Android 14", battery: 9, online: false, mac: "C4:66:1F:08:3B:7D", ip: "192.168.1.88" }
-];
+  // ========== DEVICE DATA ==========
+  const deviceList = [
+    { id: "iphone-13-pro", model: "iPhone 13 Pro", os: "iOS 17.4", battery: 89, online: true, mac: "A4:CF:12:9B:07:3D", ip: "192.168.1.105" },
+    { id: "galaxy-m23", model: "Samsung Galaxy M23", os: "Android 13", battery: 45, online: true, mac: "B8:27:EB:5F:1A:92", ip: "192.168.1.142" },
+    { id: "galaxy-a16", model: "Samsung Galaxy A16", os: "Android 14", battery: 84, online: true, mac: "DC:0B:34:6C:88:2E", ip: "192.168.1.178" },
+    { id: "oppo-a78", model: "Oppo A78", os: "Android 13", battery: 23, online: false, mac: "F2:1A:5D:77:39:AF", ip: "192.168.1.199" },
+    { id: "galaxy-s10", model: "Samsung Galaxy S10", os: "Android 12", battery: 95, online: true, mac: "A8:9E:4B:12:55:CC", ip: "192.168.1.211" },
+    { id: "galaxy-a15 5G", model: "Samsung Galaxy A15", os: "Android 14", battery: 9, online: false, mac: "C4:66:1F:08:3B:7D", ip: "192.168.1.88" }
+  ];
 
-// Initialise dynamic states
-deviceList.forEach(d => {
-  d.startTime = Date.now();
-  d.lastSeen = Date.now() - Math.floor(Math.random()*300000);
-  if (!d.online) d.lastSeen -= 3600000;
-});
-
-// ========== LIVE METRICS ==========
-const startTime = Date.now();
-let cmdCounter = 0;
-
-function updateUptime() {
-  const elapsed = Math.floor((Date.now() - startTime) / 1000);
-  const h = Math.floor(elapsed / 3600).toString().padStart(2, '0');
-  const m = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
-  const s = (elapsed % 60).toString().padStart(2, '0');
-  document.getElementById('uptime').textContent = `${h}:${m}:${s}`;
-}
-setInterval(updateUptime, 1000);
-updateUptime();
-
-function getCurrentBattery(device) {
-  const elapsedMin = (Date.now() - device.startTime) / 60000;
-  const drainRate = 0.2 + Math.random() * 0.3;
-  let current = device.battery - Math.floor(elapsedMin * drainRate);
-  if (current < 1) current = 1;
-  if (current > 100) current = 100;
-  return current;
-}
-
-function randomizeStatus() {
   deviceList.forEach(d => {
-    if (Math.random() < 0.1) {
-      d.online = !d.online;
-      d.lastSeen = Date.now();
-    }
+    d.startTime = Date.now();
+    d.lastSeen = Date.now() - Math.floor(Math.random()*300000);
+    if (!d.online) d.lastSeen -= 3600000;
   });
-  renderAll();
-}
-setInterval(randomizeStatus, 30000 + Math.floor(Math.random()*30000));
 
-setInterval(() => {
-  cmdCounter += Math.floor(Math.random() * 2);
-  document.getElementById('cmdCount').textContent = cmdCounter;
-}, 15000);
+  let allDevicesRevealed = false;
 
-// ========== RENDER FUNCTIONS ==========
-function renderDeviceList() {
-  const container = document.getElementById('devices');
-  const onlineCount = deviceList.filter(d => d.online).length;
-  document.getElementById('onlineCount').textContent = onlineCount;
-  document.getElementById('totalCount').textContent = deviceList.length;
-  document.getElementById('nodeCount').textContent = deviceList.length;
+  // ========== LIVE METRICS ==========
+  const startTime = Date.now();
+  let cmdCounter = 0;
 
-  let html = '';
-  deviceList.forEach(d => {
-    const battery = getCurrentBattery(d);
-    const lastSeenAgo = Math.floor((Date.now() - d.lastSeen) / 60000);
-    const lastSeenText = d.online ? 'Now' : (lastSeenAgo + ' min ago');
-    html += `
-      <div class="device-card ${d.online ? 'online' : 'offline'}" onclick="openPasswordModal('${d.id}')">
-        <span class="status-dot"></span>
-        <div class="device-info">
-          <div class="name">${d.model}</div>
-          <div class="meta">
-            <span>${d.os}</span>
-            <span>Battery ${battery}%</span>
-            <span>${d.online ? 'Active' : 'Inactive'}</span>
-            <span>Last seen: ${lastSeenText}</span>
-          </div>
-        </div>
-      </div>`;
-  });
-  container.innerHTML = html;
-}
-
-function renderDeviceCenter() {
-  const grid = document.getElementById('deviceGrid');
-  let html = '';
-  deviceList.forEach(d => {
-    const battery = getCurrentBattery(d);
-    html += `
-      <div class="device-mini ${d.online ? '' : 'offline'}" onclick="openPasswordModal('${d.id}')">
-        <div class="model">${d.model}</div>
-        <div class="detail">${d.os} · ${d.online ? 'Online' : 'Offline'}</div>
-        <div class="battery">🔋 ${battery}%</div>
-        <div class="detail" style="margin-top:4px">MAC: ${d.mac}</div>
-        <div class="detail">IP: ${d.ip}</div>
-      </div>`;
-  });
-  grid.innerHTML = html;
-}
-
-function addActivityLog(message, color = 'var(--green)') {
-  const feed = document.getElementById('activity');
-  const time = new Date().toLocaleTimeString('en-US', { hour12: false });
-  const div = document.createElement('div');
-  div.className = 'activity-item';
-  div.innerHTML = `<span class="time">${time}</span><span class="dot" style="background:${color}"></span><span class="desc">${message}</span>`;
-  feed.prepend(div);
-  if (feed.children.length > 20) feed.lastChild.remove();
-}
-
-const fakeLogs = [
-  "iPhone 13 Pro · Secure tunnel handshake completed",
-  "Samsung Galaxy M23 · Biometric authentication verified",
-  "Oppo A78 · Device offline – last ping 3 min ago",
-  "Samsung Galaxy S10 · Encrypted backup synced",
-  "Samsung Galaxy A15 · Battery critical – entering low power mode",
-  "Samsung Galaxy A16 · App inventory updated",
-  "System · Threat scan completed – no anomalies",
-  "Network · Latency spike detected (14ms → 112ms)"
-];
-setInterval(() => {
-  const randomLog = fakeLogs[Math.floor(Math.random() * fakeLogs.length)];
-  const color = randomLog.includes('offline') || randomLog.includes('critical') ? 'var(--red)' : 'var(--green)';
-  addActivityLog(randomLog, color);
-}, 20000 + Math.floor(Math.random()*20000));
-addActivityLog("System · All modules operational", 'var(--cyan)');
-addActivityLog("iPhone 13 Pro · Connected successfully", 'var(--green)');
-
-function renderAnalytics() {
-  document.getElementById('sessions').textContent = Math.floor(Math.random()*200 + 50);
-  document.getElementById('traffic').textContent = (Math.random()*5 + 1).toFixed(1) + ' MB';
-}
-setInterval(renderAnalytics, 60000);
-renderAnalytics();
-
-function renderNotifications() {
-  const notifDiv = document.getElementById('notifications');
-  notifDiv.innerHTML = `
-    <div class="notif-card"><span class="icon">🔵</span>System online · All services running</div>
-    <div class="notif-card"><span class="icon">🟢</span>${deviceList.filter(d=>d.online).length} devices online · Secure tunnel active</div>`;
-}
-renderNotifications();
-setInterval(renderNotifications, 30000);
-
-function renderAll() {
-  renderDeviceList();
-  renderDeviceCenter();
-}
-
-// ========== PASSWORD MODAL (smooth, realistic) ==========
-let currentDeviceId = null;
-
-function openPasswordModal(deviceId) {
-  currentDeviceId = deviceId;
-  const modal = document.getElementById('passwordModal');
-  modal.classList.add('visible');
-  document.getElementById('passwordInput').value = '';
-  document.getElementById('passwordError').style.display = 'none';
-  // slight delay to let animation play
-  setTimeout(() => {
-    document.getElementById('passwordInput').focus();
-  }, 100);
-}
-
-function closePasswordModal() {
-  document.getElementById('passwordModal').classList.remove('visible');
-  currentDeviceId = null;
-}
-
-function verifyPassword() {
-  const input = document.getElementById('passwordInput').value;
-  if (input === 'kjkszyjk') {
-    closePasswordModal();
-    const device = deviceList.find(d => d.id === currentDeviceId);
-    if (device) {
-      addActivityLog(`${device.model} · Access granted – secure session established`, 'var(--cyan)');
-    }
-    alert('Access granted. Secure connection established.');
-  } else {
-    document.getElementById('passwordError').style.display = 'block';
-    document.getElementById('passwordInput').value = '';
-    document.getElementById('passwordInput').focus();
+  function updateUptime() {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const h = Math.floor(elapsed / 3600).toString().padStart(2, '0');
+    const m = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
+    const s = (elapsed % 60).toString().padStart(2, '0');
+    document.getElementById('uptime').textContent = `${h}:${m}:${s}`;
   }
-}
+  setInterval(updateUptime, 1000);
+  updateUptime();
 
-// ========== ACCESS DENIED OVERLAY ==========
-function showAccessDenied() {
-  document.getElementById('deniedOverlay').style.display = 'flex';
-}
-function hideAccessDenied() {
-  document.getElementById('deniedOverlay').style.display = 'none';
-}
+  function getCurrentBattery(device) {
+    const elapsedMin = (Date.now() - device.startTime) / 60000;
+    const drainRate = 0.2 + Math.random() * 0.3;
+    let current = device.battery - Math.floor(elapsedMin * drainRate);
+    if (current < 1) current = 1;
+    if (current > 100) current = 100;
+    return current;
+  }
 
-// ========== SCROLL TO DEVICE CENTER ==========
-function scrollToDeviceCenter() {
-  document.getElementById('deviceCenter').scrollIntoView({ behavior: 'smooth' });
-}
+  function randomizeStatus() {
+    deviceList.forEach(d => {
+      if (Math.random() < 0.1) {
+        d.online = !d.online;
+        d.lastSeen = Date.now();
+      }
+    });
+    renderDeviceSection();
+  }
+  setInterval(randomizeStatus, 30000 + Math.floor(Math.random()*30000));
 
-// ========== BOTTOM NAVIGATION ==========
-function switchTab(tab) {
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  event.target.classList.add('active');
-  if (tab === 'devices') document.getElementById('devices').scrollIntoView({ behavior: 'smooth' });
-  if (tab === 'analytics') document.querySelector('.analytics-grid').scrollIntoView({ behavior: 'smooth' });
-  if (tab === 'activity') document.getElementById('activity').scrollIntoView({ behavior: 'smooth' });
-}
+  setInterval(() => {
+    cmdCounter += Math.floor(Math.random() * 2);
+    document.getElementById('cmdCount').textContent = cmdCounter;
+  }, 15000);
 
-// ========== INIT ==========
-renderAll();
-updateUptime();
+  // ========== RENDER FUNCTIONS ==========
+  function renderDeviceSection() {
+    const container = document.getElementById('devices');
+    const devicesToShow = allDevicesRevealed ? deviceList : deviceList.slice(0,1);
+    const onlineCount = deviceList.filter(d => d.online).length;
+    document.getElementById('onlineCount').textContent = onlineCount;
+    document.getElementById('totalCount').textContent = deviceList.length;
+    document.getElementById('nodeCount').textContent = allDevicesRevealed ? deviceList.length : 1;
 
-setTimeout(() => {
-  document.getElementById('loading').classList.add('hidden');
-  document.getElementById('app').style.display = 'block';
-}, 2000);
+    let html = '';
+    devicesToShow.forEach(d => {
+      const battery = getCurrentBattery(d);
+      const lastSeenAgo = Math.floor((Date.now() - d.lastSeen) / 60000);
+      const lastSeenText = d.online ? 'Now' : (lastSeenAgo + ' min ago');
+      html += `
+        <div class="device-card ${d.online ? 'online' : 'offline'}" onclick="openPasswordModal('${d.id}')">
+          <span class="status-dot"></span>
+          <div class="device-info">
+            <div class="name">${d.model}</div>
+            <div class="meta">
+              <span>${d.os}</span>
+              <span>Battery ${battery}%</span>
+              <span>${d.online ? 'Active' : 'Inactive'}</span>
+              <span>Last seen: ${lastSeenText}</span>
+            </div>
+          </div>
+        </div>`;
+    });
+    container.innerHTML = html;
+    if (!allDevicesRevealed) {
+      document.getElementById('seeMoreLink').style.display = 'block';
+    } else {
+      document.getElementById('seeMoreLink').style.display = 'none';
+      renderDeviceCenter();
+    }
+  }
+
+  function renderDeviceCenter() {
+    const grid = document.getElementById('deviceGrid');
+    let html = '';
+    deviceList.forEach(d => {
+      const battery = getCurrentBattery(d);
+      html += `
+        <div class="device-mini ${d.online ? '' : 'offline'}" onclick="openPasswordModal('${d.id}')">
+          <div class="model">${d.model}</div>
+          <div class="detail">${d.os} · ${d.online ? 'Online' : 'Offline'}</div>
+          <div class="battery">🔋 ${battery}%</div>
+          <div class="detail" style="margin-top:4px">MAC: ${d.mac}</div>
+          <div class="detail">IP: ${d.ip}</div>
+        </div>`;
+    });
+    grid.innerHTML = html;
+  }
+
+  function revealAllDevices() {
+    allDevicesRevealed = true;
+    document.getElementById('deviceCenter').style.display = 'block';
+    // smooth scroll to device center
+    document.getElementById('deviceCenter').scrollIntoView({ behavior:'smooth' });
+    renderDeviceSection();
+    renderDeviceCenter();
+  }
+
+  // Search functionality
+  function filterDevices() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    const cards = document.querySelectorAll('.device-card');
+    cards.forEach(card => {
+      const model = card.querySelector('.name').textContent.toLowerCase();
+      card.style.display = model.includes(query) ? 'flex' : 'none';
+    });
+    // also filter device center mini cards
+    const miniCards = document.querySelectorAll('.device-mini');
+    miniCards.forEach(card => {
+      const model = card.querySelector('.model').textContent.toLowerCase();
+      card.style.display = model.includes(query) ? 'block' : 'none';
+    });
+  }
+
+  // ========== Activity Feed ==========
+  function addActivityLog(message, color = 'var(--green)') {
+    const feed = document.getElementById('activity');
+    const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+    const div = document.createElement('div');
+    div.className = 'activity-item';
+    div.innerHTML = `<span class="time">${time}</span><span class="dot" style="background:${color}"></span><span class="desc">${message}</span>`;
+    feed.prepend(div);
+    if (feed.children.length > 20) feed.lastChild.remove();
+  }
+
+  const fakeLogs = [
+    "iPhone 13 Pro · Secure tunnel handshake completed",
+    "Samsung Galaxy M23 · Biometric authentication verified",
+    "Oppo A78 · Device offline – last ping 3 min ago",
+    "Samsung Galaxy S10 · Encrypted backup synced",
+    "Samsung Galaxy A15 5G · Battery critical – entering low power mode",
+    "Samsung Galaxy A16 · App inventory updated",
+    "System · Threat scan completed – no anomalies",
+    "Network · Latency spike detected (14ms → 112ms)"
+  ];
+  setInterval(() => {
+    const randomLog = fakeLogs[Math.floor(Math.random() * fakeLogs.length)];
+    const color = randomLog.includes('offline') || randomLog.includes('critical') ? 'var(--red)' : 'var(--green)';
+    addActivityLog(randomLog, color);
+  }, 20000 + Math.floor(Math.random()*20000));
+  addActivityLog("System · All modules operational", 'var(--cyan)');
+  addActivityLog("iPhone 13 Pro · Connected successfully", 'var(--green)');
+
+  // Analytics
+  function renderAnalytics() {
+    document.getElementById('sessions').textContent = Math.floor(Math.random()*200 + 50);
+    document.getElementById('traffic').textContent = (Math.random()*5 + 1).toFixed(1) + ' MB';
+  }
+  setInterval(renderAnalytics, 60000);
+  renderAnalytics();
+
+  // Notifications
+  function renderNotifications() {
+    const notifDiv = document.getElementById('notifications');
+    notifDiv.innerHTML = `
+      <div class="notif-card"><span class="icon">⌬</span>System online · All services running</div>
+      <div class="notif-card"><span class="icon">⌬</span>${deviceList.filter(d=>d.online).length} devices online · Secure tunnel active</div>`;
+  }
+  renderNotifications();
+  setInterval(renderNotifications, 30000);
+
+  // ========== PASSWORD MODAL ==========
+  let currentDeviceId = null;
+  function openPasswordModal(deviceId) {
+    currentDeviceId = deviceId;
+    document.getElementById('passwordModal').classList.add('visible');
+    document.getElementById('passwordInput').value = '';
+    document.getElementById('passwordError').style.display = 'none';
+    setTimeout(() => document.getElementById('passwordInput').focus(), 100);
+  }
+  function closePasswordModal() {
+    document.getElementById('passwordModal').classList.remove('visible');
+    currentDeviceId = null;
+  }
+  function verifyPassword() {
+    if (document.getElementById('passwordInput').value === 'kjkszyjk') {
+      closePasswordModal();
+      const device = deviceList.find(d => d.id === currentDeviceId);
+      if (device) addActivityLog(`${device.model} · Access granted – secure session established`, 'var(--cyan)');
+      alert('Access granted. Secure connection established.');
+    } else {
+      document.getElementById('passwordError').style.display = 'block';
+      document.getElementById('passwordInput').value = '';
+      document.getElementById('passwordInput').focus();
+    }
+  }
+
+  // Access Denied
+  function showAccessDenied() {
+    document.getElementById('deniedOverlay').style.display = 'flex';
+  }
+  function hideAccessDenied() {
+    document.getElementById('deniedOverlay').style.display = 'none';
+  }
+
+  // Bottom nav
+  function switchTab(tab) {
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    event.target.classList.add('active');
+    if (tab === 'devices') document.getElementById('devices').scrollIntoView({ behavior:'smooth' });
+    if (tab === 'analytics') document.querySelector('.analytics-grid').scrollIntoView({ behavior:'smooth' });
+    if (tab === 'activity') document.getElementById('activity').scrollIntoView({ behavior:'smooth' });
+  }
+
+  // ========== INIT ==========
+  renderDeviceSection();
+  // initial device center hidden
+  document.getElementById('deviceCenter').style.display = 'none';
+  updateUptime();
+
+  setTimeout(() => {
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('app').style.display = 'block';
+  }, 2000);
 </script>
 </body>
 </html>
