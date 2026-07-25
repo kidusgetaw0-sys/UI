@@ -56,8 +56,8 @@
       padding:20px 0 24px;
     }
     .header h1{
-      font-size:24px;                  /* reduced from 32px */
-      font-weight:500;                /* less bold */
+      font-size:20px;                  /* even smaller, more aesthetic */
+      font-weight:500;
       letter-spacing:-0.5px;
       margin-bottom:2px;
       background:linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 100%);
@@ -177,10 +177,10 @@
       border-bottom:1px solid rgba(255,255,255,.04);
       font-size:12px;
       opacity:0;
-      animation:fadeSlide 0.3s ease forwards;
+      animation:fadeSlide 0.25s ease forwards; /* faster animation */
     }
     @keyframes fadeSlide{
-      from{opacity:0;transform:translateY(8px)}
+      from{opacity:0;transform:translateY(6px)}
       to{opacity:1;transform:translateY(0)}
     }
     .activity-item .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
@@ -235,7 +235,7 @@
       gap:10px;
       backdrop-filter:blur(24px);
     }
-    .notif-card .icon{font-size:16px}
+    .notif-card .icon{font-size:16px; color:var(--cyan);} /* changed to hexagon color */
 
     /* Search bar – now functional */
     .search-bar{
@@ -357,9 +357,9 @@
       padding:28px 24px;
       width:320px;
       text-align:center;
-      animation: fadeInUp 0.35s cubic-bezier(0.16,1,0.3,1);
+      animation: fadeInUp 0.3s cubic-bezier(0.16,1,0.3,1); /* faster */
     }
-    @keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
     .password-box .lock-icon{font-size:32px;margin-bottom:10px}
     .password-box h3{font-size:16px;font-weight:500;margin-bottom:8px;color:var(--text);letter-spacing:1px}
     .warning-text{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:20px}
@@ -517,14 +517,14 @@
 </div>
 
 <script>
-  // ========== DEVICE DATA ==========
+  // ========== DEVICE DATA (updated A15 -> A15 5G) ==========
   const deviceList = [
     { id: "iphone-13-pro", model: "iPhone 13 Pro", os: "iOS 17.4", battery: 89, online: true, mac: "A4:CF:12:9B:07:3D", ip: "192.168.1.105" },
     { id: "galaxy-m23", model: "Samsung Galaxy M23", os: "Android 13", battery: 45, online: true, mac: "B8:27:EB:5F:1A:92", ip: "192.168.1.142" },
     { id: "galaxy-a16", model: "Samsung Galaxy A16", os: "Android 14", battery: 84, online: true, mac: "DC:0B:34:6C:88:2E", ip: "192.168.1.178" },
     { id: "oppo-a78", model: "Oppo A78", os: "Android 13", battery: 23, online: false, mac: "F2:1A:5D:77:39:AF", ip: "192.168.1.199" },
     { id: "galaxy-s10", model: "Samsung Galaxy S10", os: "Android 12", battery: 95, online: true, mac: "A8:9E:4B:12:55:CC", ip: "192.168.1.211" },
-    { id: "galaxy-a15 5G", model: "Samsung Galaxy A15", os: "Android 14", battery: 9, online: false, mac: "C4:66:1F:08:3B:7D", ip: "192.168.1.88" }
+    { id: "galaxy-a15-5g", model: "Samsung Galaxy A15 5G", os: "Android 14", battery: 9, online: false, mac: "C4:66:1F:08:3B:7D", ip: "192.168.1.88" }
   ];
 
   deviceList.forEach(d => {
@@ -631,10 +631,8 @@
   function revealAllDevices() {
     allDevicesRevealed = true;
     document.getElementById('deviceCenter').style.display = 'block';
-    // smooth scroll to device center
     document.getElementById('deviceCenter').scrollIntoView({ behavior:'smooth' });
     renderDeviceSection();
-    renderDeviceCenter();
   }
 
   // Search functionality
@@ -645,7 +643,6 @@
       const model = card.querySelector('.name').textContent.toLowerCase();
       card.style.display = model.includes(query) ? 'flex' : 'none';
     });
-    // also filter device center mini cards
     const miniCards = document.querySelectorAll('.device-mini');
     miniCards.forEach(card => {
       const model = card.querySelector('.model').textContent.toLowerCase();
@@ -690,7 +687,7 @@
   setInterval(renderAnalytics, 60000);
   renderAnalytics();
 
-  // Notifications
+  // Notifications (icons changed to ⌬)
   function renderNotifications() {
     const notifDiv = document.getElementById('notifications');
     notifDiv.innerHTML = `
@@ -707,7 +704,7 @@
     document.getElementById('passwordModal').classList.add('visible');
     document.getElementById('passwordInput').value = '';
     document.getElementById('passwordError').style.display = 'none';
-    setTimeout(() => document.getElementById('passwordInput').focus(), 100);
+    setTimeout(() => document.getElementById('passwordInput').focus(), 80);
   }
   function closePasswordModal() {
     document.getElementById('passwordModal').classList.remove('visible');
@@ -745,7 +742,6 @@
 
   // ========== INIT ==========
   renderDeviceSection();
-  // initial device center hidden
   document.getElementById('deviceCenter').style.display = 'none';
   updateUptime();
 
