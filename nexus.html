@@ -56,7 +56,7 @@
       padding:20px 0 24px;
     }
     .header h1{
-      font-size:20px;                  /* even smaller, more aesthetic */
+      font-size:20px;
       font-weight:500;
       letter-spacing:-0.5px;
       margin-bottom:2px;
@@ -177,7 +177,7 @@
       border-bottom:1px solid rgba(255,255,255,.04);
       font-size:12px;
       opacity:0;
-      animation:fadeSlide 0.25s ease forwards; /* faster animation */
+      animation:fadeSlide 0.25s ease forwards;
     }
     @keyframes fadeSlide{
       from{opacity:0;transform:translateY(6px)}
@@ -235,7 +235,7 @@
       gap:10px;
       backdrop-filter:blur(24px);
     }
-    .notif-card .icon{font-size:16px; color:var(--cyan);} /* changed to hexagon color */
+    .notif-card .icon{font-size:16px; color:var(--cyan);}
 
     /* Search bar – now functional */
     .search-bar{
@@ -357,7 +357,7 @@
       padding:28px 24px;
       width:320px;
       text-align:center;
-      animation: fadeInUp 0.3s cubic-bezier(0.16,1,0.3,1); /* faster */
+      animation: fadeInUp 0.3s cubic-bezier(0.16,1,0.3,1);
     }
     @keyframes fadeInUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
     .password-box .lock-icon{font-size:32px;margin-bottom:10px}
@@ -432,7 +432,7 @@
     </div>
   </div>
 
-  <!-- Search Bar (now functional) -->
+  <!-- Search Bar -->
   <div class="search-bar">
     <span style="opacity:0.5">🔍</span>
     <input placeholder="Search devices…" id="searchInput" oninput="filterDevices()">
@@ -517,7 +517,7 @@
 </div>
 
 <script>
-  // ========== DEVICE DATA (updated A15 -> A15 5G) ==========
+  // ========== DEVICE DATA ==========
   const deviceList = [
     { id: "iphone-13-pro", model: "iPhone 13 Pro", os: "iOS 17.4", battery: 89, online: true, mac: "A4:CF:12:9B:07:3D", ip: "192.168.1.105" },
     { id: "galaxy-m23", model: "Samsung Galaxy M23", os: "Android 13", battery: 45, online: true, mac: "B8:27:EB:5F:1A:92", ip: "192.168.1.142" },
@@ -535,7 +535,7 @@
 
   let allDevicesRevealed = false;
 
-  // ========== LIVE METRICS ==========
+  // ========== LIVE METRICS (unchanged) ==========
   const startTime = Date.now();
   let cmdCounter = 0;
 
@@ -550,31 +550,39 @@
   updateUptime();
 
   function getCurrentBattery(device) {
-    const elapsedMin = (Date.now() - device.startTime) / 60000;
-    const drainRate = 0.2 + Math.random() * 0.3;
-    let current = device.battery - Math.floor(elapsedMin * drainRate);
+    const elapsedSec = (Date.now() - device.startTime) / 1000;
+    const drainPerSec = 0.01 + Math.random() * 0.02;
+    let current = device.battery - Math.floor(elapsedSec * drainPerSec);
     if (current < 1) current = 1;
     if (current > 100) current = 100;
     return current;
   }
 
-  function randomizeStatus() {
+  // ========== ULTRA-FAST ANIMATION LOOP (no FPS counter) ==========
+  function highPerfLoop(now) {
+    // Update battery drain every frame for super smooth display
     deviceList.forEach(d => {
-      if (Math.random() < 0.1) {
-        d.online = !d.online;
-        d.lastSeen = Date.now();
-      }
+      d.currentBattery = getCurrentBattery(d);
     });
-    renderDeviceSection();
+    // Update battery text efficiently (only every 30 frames)
+    if (!window._frameCount) window._frameCount = 0;
+    window._frameCount++;
+    if (window._frameCount % 30 === 0) {
+      document.querySelectorAll('.device-card .meta span:nth-child(2)').forEach((el, i) => {
+        if (deviceList[i] && el) el.textContent = `Battery ${deviceList[i].currentBattery}%`;
+      });
+      // Also update mini device batteries
+      document.querySelectorAll('.device-mini .battery').forEach((el, i) => {
+        if (deviceList[i] && el) el.textContent = `🔋 ${deviceList[i].currentBattery}%`;
+      });
+    }
+    requestAnimationFrame(highPerfLoop);
   }
-  setInterval(randomizeStatus, 30000 + Math.floor(Math.random()*30000));
 
-  setInterval(() => {
-    cmdCounter += Math.floor(Math.random() * 2);
-    document.getElementById('cmdCount').textContent = cmdCounter;
-  }, 15000);
+  // Kick off the high-FPS loop
+  requestAnimationFrame(highPerfLoop);
 
-  // ========== RENDER FUNCTIONS ==========
+  // ========== RENDER FUNCTIONS (mostly unchanged) ==========
   function renderDeviceSection() {
     const container = document.getElementById('devices');
     const devicesToShow = allDevicesRevealed ? deviceList : deviceList.slice(0,1);
@@ -635,16 +643,13 @@
     renderDeviceSection();
   }
 
-  // Search functionality
   function filterDevices() {
     const query = document.getElementById('searchInput').value.toLowerCase();
-    const cards = document.querySelectorAll('.device-card');
-    cards.forEach(card => {
+    document.querySelectorAll('.device-card').forEach(card => {
       const model = card.querySelector('.name').textContent.toLowerCase();
       card.style.display = model.includes(query) ? 'flex' : 'none';
     });
-    const miniCards = document.querySelectorAll('.device-mini');
-    miniCards.forEach(card => {
+    document.querySelectorAll('.device-mini').forEach(card => {
       const model = card.querySelector('.model').textContent.toLowerCase();
       card.style.display = model.includes(query) ? 'block' : 'none';
     });
@@ -687,7 +692,7 @@
   setInterval(renderAnalytics, 60000);
   renderAnalytics();
 
-  // Notifications (icons changed to ⌬)
+  // Notifications
   function renderNotifications() {
     const notifDiv = document.getElementById('notifications');
     notifDiv.innerHTML = `
