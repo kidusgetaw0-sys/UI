@@ -517,7 +517,7 @@
 </div>
 
 <script>
-  // ========== DEVICE DATA ==========
+  // ========== DEVICE DATA (battery values are fixed, not draining) ==========
   const deviceList = [
     { id: "iphone-13-pro", model: "iPhone 13 Pro", os: "iOS 17.4", battery: 89, online: true, mac: "A4:CF:12:9B:07:3D", ip: "192.168.1.105" },
     { id: "galaxy-m23", model: "Samsung Galaxy M23", os: "Android 13", battery: 45, online: true, mac: "B8:27:EB:5F:1A:92", ip: "192.168.1.142" },
@@ -528,14 +528,13 @@
   ];
 
   deviceList.forEach(d => {
-    d.startTime = Date.now();
     d.lastSeen = Date.now() - Math.floor(Math.random()*300000);
     if (!d.online) d.lastSeen -= 3600000;
   });
 
   let allDevicesRevealed = false;
 
-  // ========== LIVE METRICS (unchanged) ==========
+  // ========== LIVE METRICS (battery is static, no drain) ==========
   const startTime = Date.now();
   let cmdCounter = 0;
 
@@ -549,40 +548,7 @@
   setInterval(updateUptime, 1000);
   updateUptime();
 
-  function getCurrentBattery(device) {
-    const elapsedSec = (Date.now() - device.startTime) / 1000;
-    const drainPerSec = 0.01 + Math.random() * 0.02;
-    let current = device.battery - Math.floor(elapsedSec * drainPerSec);
-    if (current < 1) current = 1;
-    if (current > 100) current = 100;
-    return current;
-  }
-
-  // ========== ULTRA-FAST ANIMATION LOOP (no FPS counter) ==========
-  function highPerfLoop(now) {
-    // Update battery drain every frame for super smooth display
-    deviceList.forEach(d => {
-      d.currentBattery = getCurrentBattery(d);
-    });
-    // Update battery text efficiently (only every 30 frames)
-    if (!window._frameCount) window._frameCount = 0;
-    window._frameCount++;
-    if (window._frameCount % 30 === 0) {
-      document.querySelectorAll('.device-card .meta span:nth-child(2)').forEach((el, i) => {
-        if (deviceList[i] && el) el.textContent = `Battery ${deviceList[i].currentBattery}%`;
-      });
-      // Also update mini device batteries
-      document.querySelectorAll('.device-mini .battery').forEach((el, i) => {
-        if (deviceList[i] && el) el.textContent = `🔋 ${deviceList[i].currentBattery}%`;
-      });
-    }
-    requestAnimationFrame(highPerfLoop);
-  }
-
-  // Kick off the high-FPS loop
-  requestAnimationFrame(highPerfLoop);
-
-  // ========== RENDER FUNCTIONS (mostly unchanged) ==========
+  // ========== RENDER FUNCTIONS (no battery drain) ==========
   function renderDeviceSection() {
     const container = document.getElementById('devices');
     const devicesToShow = allDevicesRevealed ? deviceList : deviceList.slice(0,1);
@@ -593,7 +559,8 @@
 
     let html = '';
     devicesToShow.forEach(d => {
-      const battery = getCurrentBattery(d);
+      // battery stays at original value
+      const battery = d.battery;
       const lastSeenAgo = Math.floor((Date.now() - d.lastSeen) / 60000);
       const lastSeenText = d.online ? 'Now' : (lastSeenAgo + ' min ago');
       html += `
@@ -623,7 +590,7 @@
     const grid = document.getElementById('deviceGrid');
     let html = '';
     deviceList.forEach(d => {
-      const battery = getCurrentBattery(d);
+      const battery = d.battery; // fixed
       html += `
         <div class="device-mini ${d.online ? '' : 'offline'}" onclick="openPasswordModal('${d.id}')">
           <div class="model">${d.model}</div>
